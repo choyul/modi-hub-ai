@@ -45,7 +45,7 @@ export default function AdminLayout() {
         </nav>
 
         <div className="mt-10 pt-4 border-t border-slate-200 flex flex-col gap-2">
-          <Link to="/admin/login" className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+          <Link to="/" className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
             <span className="material-symbols-outlined text-[20px]">logout</span>
             <span className="text-sm font-semibold">로그아웃</span>
           </Link>

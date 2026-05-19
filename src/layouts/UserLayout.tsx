@@ -40,6 +40,11 @@ export default function UserLayout() {
             <nav className="hidden md:flex gap-6 items-center text-sm font-medium text-slate-600">
               <Link to="/" className={`${location.pathname === '/' ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}`}>홈</Link>
               <Link to="/spaces" className={`${location.pathname === '/spaces' ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}`}>공간안내</Link>
+              <Link to="/reservations" className={`${location.pathname === '/reservations' ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}`}>예약현황</Link>
+              <Link to="/admin/login" className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-800 transition-colors text-xs font-bold text-slate-500">
+                <span className="material-symbols-outlined text-[14px] pt-0.5">lock</span>
+                관리자
+              </Link>
             </nav>
             <div className="flex items-center gap-3">
               {!isLoggedIn ? (
