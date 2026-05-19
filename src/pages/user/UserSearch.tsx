@@ -82,6 +82,15 @@ ${JSON.stringify({ spaces: lightweightSpaces }, null, 2)}
         });
 
         if (!response.ok) {
+          if (response.status === 429) {
+            setError('잠시 후 다시 시도해주세요 (AI 요청이 일시적으로 많아졌습니다)');
+            setTimeout(() => {
+              if (window.location.pathname.includes('/search')) {
+                fetchRecommendations();
+              }
+            }, 3000);
+            return; // Skip json parsing and finally block handles loading
+          }
           throw new Error('데이터를 불러오는데 실패했습니다.');
         }
 
