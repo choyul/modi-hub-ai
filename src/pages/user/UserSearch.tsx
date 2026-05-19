@@ -69,13 +69,15 @@ ${JSON.stringify({ spaces: lightweightSpaces }, null, 2)}
   ]
 }`;
 
-        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [{
+              parts: [{ text: prompt }]
+            }],
             generationConfig: { 
-              response_mime_type: "application/json",
+              responseMimeType: "application/json",
               maxOutputTokens: 800
             }
           })
@@ -83,13 +85,7 @@ ${JSON.stringify({ spaces: lightweightSpaces }, null, 2)}
 
         if (!response.ok) {
           if (response.status === 429) {
-            setError('잠시 후 다시 시도해주세요 (AI 요청이 일시적으로 많아졌습니다)');
-            setTimeout(() => {
-              if (window.location.pathname.includes('/search')) {
-                fetchRecommendations();
-              }
-            }, 3000);
-            return; // Skip json parsing and finally block handles loading
+            throw new Error('잠시 후 다시 시도해주세요 (AI 요청이 일시적으로 많아졌습니다)');
           }
           throw new Error('데이터를 불러오는데 실패했습니다.');
         }
