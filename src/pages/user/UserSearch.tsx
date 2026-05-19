@@ -35,18 +35,49 @@ export default function UserSearch() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/recommend-spaces', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query }),
+        const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!API_KEY) {
+          throw new Error("Gemini API Key가 설정되지 않았습니다.");
+        }
+
+        const prompt = `사용자의 다음 요청에 가장 적합한 거점 시설 공간을 최대 3개 추천해주세요.
+요청: "${query}"
+
+제공되는 공간 데이터:
+${JSON.stringify(spacesData, null, 2)}
+
+응답은 반드시 아래 JSON 형식으로만 해주세요:
+{
+  "recommendedSpaces": [
+    {
+      "id": "공간ID",
+      "matchScore": 85,
+      "reasoning": "추천 이유 (1-2문장)"
+    }
+  ],
+  "suggestedFollowUps": [
+    "추가로 제안할만한 관련 질문 1",
+    "추가로 제안할만한 관련 질문 2"
+  ]
+}`;
+
+        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { response_mime_type: "application/json" }
+          })
         });
 
         if (!response.ok) {
           throw new Error('데이터를 불러오는데 실패했습니다.');
         }
 
-        const data: ApiResponse = await response.json();
-        setResult(data);
+        const data = await response.json();
+        const textResponse = data.candidates[0].content.parts[0].text;
+        const parsedData: ApiResponse = JSON.parse(textResponse);
+        setResult(parsedData);
       } catch (err: any) {
         setError(err.message || '오류가 발생했습니다.');
       } finally {
