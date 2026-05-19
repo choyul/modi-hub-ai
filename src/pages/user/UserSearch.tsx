@@ -40,11 +40,19 @@ export default function UserSearch() {
           throw new Error("Gemini API Key가 설정되지 않았습니다.");
         }
 
+        const lightweightSpaces = spacesData.spaces.map(s => ({
+          id: s.id,
+          name: s.name,
+          category: s.category,
+          capacity: `${s.capacity_min}~${s.capacity_max}명`,
+          specialty: s.specialty || ''
+        }));
+
         const prompt = `사용자의 다음 요청에 가장 적합한 거점 시설 공간을 최대 3개 추천해주세요.
 요청: "${query}"
 
 제공되는 공간 데이터:
-${JSON.stringify(spacesData, null, 2)}
+${JSON.stringify({ spaces: lightweightSpaces }, null, 2)}
 
 응답은 반드시 아래 JSON 형식으로만 해주세요:
 {
@@ -66,7 +74,10 @@ ${JSON.stringify(spacesData, null, 2)}
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { response_mime_type: "application/json" }
+            generationConfig: { 
+              response_mime_type: "application/json",
+              maxOutputTokens: 800
+            }
           })
         });
 
