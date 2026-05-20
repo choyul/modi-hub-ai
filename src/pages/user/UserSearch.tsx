@@ -35,7 +35,7 @@ export default function UserSearch() {
       setLoading(true);
       setError(null);
       try {
-        const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+        const API_KEY = "AIzaSyDg_r1ojAXKl4JBsyGGFy5qnOcL9Kmzk6U";
         if (!API_KEY) {
           throw new Error("Gemini API Key가 설정되지 않았습니다.");
         }
