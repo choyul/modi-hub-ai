@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router';
 import spacesData from '../../data/spaces.json';
 import { getCategoryImageUrl } from './UserSpaces';
 import { useAuth } from '../../contexts/AuthContext';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface RecommendedSpace {
   id: string;
@@ -35,7 +36,7 @@ export default function UserSearch() {
       setLoading(true);
       setError(null);
       try {
-        const API_KEY = "AIzaSyD9t8633-uSdJUnYTVyimBgIY-4NIUkgTk";
+        const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || "";
         if (!API_KEY) {
           throw new Error("Gemini API Key가 설정되지 않았습니다.");
         }
@@ -69,29 +70,17 @@ ${JSON.stringify({ spaces: lightweightSpaces }, null, 2)}
   ]
 }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{ text: prompt }]
-            }],
-            generationConfig: { 
-              responseMimeType: "application/json",
-              maxOutputTokens: 800
-            }
-          })
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ 
+          model: "gemini-2.0-flash",
+          generationConfig: {
+            responseMimeType: "application/json",
+            maxOutputTokens: 800
+          }
         });
 
-        if (!response.ok) {
-          if (response.status === 429) {
-            throw new Error('잠시 후 다시 시도해주세요 (AI 요청이 일시적으로 많아졌습니다)');
-          }
-          throw new Error('데이터를 불러오는데 실패했습니다.');
-        }
-
-        const data = await response.json();
-        const textResponse = data.candidates[0].content.parts[0].text;
+        const aiResult = await model.generateContent(prompt);
+        const textResponse = aiResult.response.text();
         const parsedData: ApiResponse = JSON.parse(textResponse);
         setResult(parsedData);
       } catch (err: any) {
