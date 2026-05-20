@@ -35,7 +35,7 @@ export default function UserSearch() {
       setLoading(true);
       setError(null);
       try {
-        const API_KEY = "AIzaSyDg_r1ojAXKl4JBsyGGFy5qnOcL9Kmzk6U";
+        const API_KEY = "AIzaSyD9t8633-uSdJUnYTVyimBgIY-4NIUkgTk";
         if (!API_KEY) {
           throw new Error("Gemini API Key가 설정되지 않았습니다.");
         }
