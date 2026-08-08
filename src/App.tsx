@@ -9,7 +9,6 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminSpace from './pages/admin/AdminSpace';
 import AdminLog from './pages/admin/AdminLog';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
-import AdminRag from './pages/admin/AdminRag';
 import AdminAccount from './pages/admin/AdminAccount';
 import AdminLogin from './pages/admin/AdminLogin';
 
@@ -33,7 +32,6 @@ export default function App() {
           <Route path="space" element={<AdminSpace />} />
           <Route path="log" element={<AdminLog />} />
           <Route path="analytics" element={<AdminAnalytics />} />
-          <Route path="rag" element={<AdminRag />} />
           <Route path="account" element={<AdminAccount />} />
         </Route>
 

@@ -19,6 +19,7 @@ const REDIS_TOKEN =
 
 const LOG_KEY = 'modi:searchlog';
 const DEMAND_KEY = 'modi:demand';
+const RESERVATION_KEY = 'modi:reservation';
 const MAX_ENTRIES = 2000;
 
 export const isPersistent = Boolean(REDIS_URL && REDIS_TOKEN);
@@ -53,10 +54,30 @@ export interface DemandRegistration {
   note: string | null;
 }
 
+export interface Reservation {
+  id: string;
+  ts: string;
+  spaceId: string;
+  /** 신청자 표시명. 실명 인증 체계가 없으므로 화면에 그대로 표기한다 */
+  applicant: string;
+  useDate: string;
+  useTime: string;
+  headcount: number;
+  purpose: string;
+  contact: string | null;
+  /** 담당자 승인 전까지는 항상 '승인대기'. 자동 확정하지 않는다 */
+  status: '승인대기' | '예약확정' | '반려';
+}
+
 /** 메모리 폴백 (서버리스에서는 인스턴스 단위로 휘발) */
-const memory: { logs: SearchLog[]; demands: DemandRegistration[] } = {
+const memory: {
+  logs: SearchLog[];
+  demands: DemandRegistration[];
+  reservations: Reservation[];
+} = {
   logs: [],
   demands: [],
+  reservations: [],
 };
 
 async function redis(command: (string | number)[]): Promise<any> {
@@ -114,11 +135,25 @@ export function scrub(text: string): string {
 export const appendSearchLog = (log: SearchLog) =>
   push(LOG_KEY, memory.logs, { ...log, rawQuery: scrub(log.rawQuery) });
 
+/**
+ * contact 는 사용자가 알림받겠다고 직접 적은 값이므로 그대로 보관한다.
+ * 반면 rawQuery 는 검색 문장이므로 연락처가 섞여 들어왔다면 마스킹한다.
+ */
 export const appendDemand = (d: DemandRegistration) =>
-  push(DEMAND_KEY, memory.demands, d);
+  push(DEMAND_KEY, memory.demands, {
+    ...d,
+    rawQuery: scrub(d.rawQuery),
+    note: d.note ? scrub(d.note) : null,
+  });
 
 export const readSearchLogs = (limit = 500) =>
   readAll<SearchLog>(LOG_KEY, memory.logs, limit);
 
 export const readDemands = (limit = 500) =>
   readAll<DemandRegistration>(DEMAND_KEY, memory.demands, limit);
+
+export const appendReservation = (r: Reservation) =>
+  push(RESERVATION_KEY, memory.reservations, r);
+
+export const readReservations = (limit = 500) =>
+  readAll<Reservation>(RESERVATION_KEY, memory.reservations, limit);

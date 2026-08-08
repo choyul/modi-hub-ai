@@ -12,6 +12,11 @@ export default function AdminAccount() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">계정 관리</h1>
           <p className="text-slate-500 mt-1">관리자 계정, 역할별 권한 및 보안 설정을 관리합니다.</p>
+          {/* 이 화면만 아직 실제 데이터와 연결되어 있지 않다. 감추지 않고 화면에 쓴다. */}
+          <p className="mt-3 inline-block text-[12.5px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+            이 화면은 아직 실제 계정 체계와 연결되지 않은 화면 구성안입니다 (표시된 사용자는
+            예시). 인증은 후속 과제입니다.
+          </p>
         </div>
         <button className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">person_add</span>

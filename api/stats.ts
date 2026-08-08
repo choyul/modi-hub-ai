@@ -7,7 +7,12 @@
  * 원문 질의·연락처가 포함된 상세 목록은 ADMIN_TOKEN 헤더가 맞을 때만 내려간다.
  * 토큰이 서버에 설정돼 있지 않으면 집계값만 공개하고, 그 사실을 응답에 명시한다.
  */
-import { readSearchLogs, readDemands, isPersistent } from '../server/store';
+import {
+  readSearchLogs,
+  readDemands,
+  readReservations,
+  isPersistent,
+} from '../server/store';
 
 function countBy<T>(items: T[], key: (t: T) => string | null) {
   const map = new Map<string, number>();
@@ -28,7 +33,11 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const [logs, demands] = await Promise.all([readSearchLogs(500), readDemands(500)]);
+    const [logs, demands, reservations] = await Promise.all([
+      readSearchLogs(500),
+      readDemands(500),
+      readReservations(500),
+    ]);
 
     const unmetLogs = logs.filter((l) => l.outcome === 'unmet');
     const adminToken = process.env.ADMIN_TOKEN;
@@ -48,6 +57,9 @@ export default async function handler(req: any, res: any) {
         unmetRate: logs.length ? Math.round((unmetLogs.length / logs.length) * 100) : 0,
         registeredDemands: demands.length,
         contactLeft: demands.filter((d) => d.contact).length,
+        // 성공 수요(신청)와 실패 수요(미충족)를 한 화면에서 대조하기 위한 값
+        reservationCount: reservations.length,
+        pendingReservations: reservations.filter((r) => r.status === '승인대기').length,
         avgLatencyMs: logs.length
           ? Math.round(logs.reduce((a, l) => a + (l.latencyMs || 0), 0) / logs.length)
           : 0,
@@ -63,6 +75,7 @@ export default async function handler(req: any, res: any) {
         ? logs.slice(0, 50)
         : logs.slice(0, 50).map((l) => ({ ...l, rawQuery: '[비공개]' })),
       demands: authorized ? demands.slice(0, 50) : [],
+      reservations: authorized ? reservations.slice(0, 50) : [],
     });
   } catch (err) {
     console.error('집계 실패:', err);

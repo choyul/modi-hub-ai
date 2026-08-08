@@ -13,6 +13,7 @@ import dotenv from 'dotenv';
 import recommendHandler from './api/recommend-spaces';
 import demandHandler from './api/demand';
 import statsHandler from './api/stats';
+import reservationHandler from './api/reservation';
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ async function startServer() {
   app.post('/api/recommend-spaces', (req, res) => recommendHandler(req, res));
   app.post('/api/demand', (req, res) => demandHandler(req, res));
   app.get('/api/stats', (req, res) => statsHandler(req, res));
+  app.post('/api/reservation', (req, res) => reservationHandler(req, res));
+  app.get('/api/reservation', (req, res) => reservationHandler(req, res));
 
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

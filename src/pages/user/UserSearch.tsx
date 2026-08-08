@@ -3,6 +3,15 @@ import { useSearchParams, useNavigate } from 'react-router';
 import spacesData from '../../data/spaces.json';
 import { getCategoryImageUrl } from './UserSpaces';
 import { useAuth } from '../../contexts/AuthContext';
+import {
+  capacityLabel,
+  feeLabel,
+  leadDaysLabel,
+  canApply,
+  findSpace,
+  type Space as SpaceInfo,
+} from '../../lib/space';
+
 
 /**
  * 검색 결과 화면.
@@ -42,26 +51,13 @@ interface ApiResponse {
   persisted: boolean;
 }
 
-type SpaceInfo = (typeof spacesData.spaces)[number];
-
-const findSpace = (id: string) =>
-  spacesData.spaces.find((s) => s.id === id) as SpaceInfo | undefined;
-
-function feeLabel(space: SpaceInfo) {
-  return space.fee_per_hour
-    ? `${space.fee_per_hour.toLocaleString()}원/시간`
-    : space.fee_per_night
-    ? `${space.fee_per_night.toLocaleString()}원/1박`
-    : '무료';
-}
-
 // [원칙 2] 이유 설명 — 추천 근거를 데이터에서 구조화해 사용자가 스스로 검증하게 함
 function buildGrounds(space: SpaceInfo) {
   return [
     {
       icon: 'group',
       label: '수용 인원',
-      value: `${space.capacity_min}~${space.capacity_max}명`,
+      value: capacityLabel(space),
     },
     {
       icon: 'construction',
@@ -71,7 +67,7 @@ function buildGrounds(space: SpaceInfo) {
     {
       icon: 'event_available',
       label: '이용 조건',
-      value: `${feeLabel(space)} · 예약 ${space.reservation_lead_days}일 전 신청`,
+      value: `${feeLabel(space)} · ${leadDaysLabel(space)}`,
     },
   ];
 }
@@ -276,7 +272,7 @@ export default function UserSearch() {
                             <div className="text-sm font-bold text-slate-800">
                               {s.name}
                               <span className="ml-2 font-normal text-slate-500 text-[12px]">
-                                {s.facility} · {s.capacity_min}~{s.capacity_max}명 · {feeLabel(s)}
+                                {s.facility} · {capacityLabel(s)} · {feeLabel(s)}
                               </span>
                             </div>
                             <p className="text-[13px] text-slate-600 mt-0.5">{alt.reasoning}</p>
@@ -530,21 +526,32 @@ export default function UserSearch() {
                               </span>
                               <span>④ 예약 확정</span>
                             </div>
-                            <button
-                              onClick={() => {
-                                if (!isLoggedIn) {
-                                  navigate('/login');
-                                } else {
-                                  navigate(`/reservations?apply=${spaceInfo.id}`);
-                                }
-                              }}
-                              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
-                            >
-                              예약 신청하기
-                              <span className="font-normal text-indigo-200 ml-1 text-xs">
-                                (담당자 승인 후 확정)
-                              </span>
-                            </button>
+                            {canApply(spaceInfo) ? (
+                              <button
+                                onClick={() => {
+                                  if (!isLoggedIn) {
+                                    navigate('/login');
+                                  } else {
+                                    navigate(`/reservations?apply=${spaceInfo.id}`);
+                                  }
+                                }}
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
+                              >
+                                예약 신청하기
+                                <span className="font-normal text-indigo-200 ml-1 text-xs">
+                                  (담당자 승인 후 확정)
+                                </span>
+                              </button>
+                            ) : (
+                              // 신청 절차가 확인되지 않은 공간에 온라인 접수를 열면 거짓말이 된다
+                              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-800">
+                                <b>온라인 신청을 아직 열 수 없는 공간입니다.</b>
+                                <div className="mt-0.5 text-amber-700">
+                                  {(spaceInfo as any).owner_dept} 소관으로, 이용 조건과 신청 절차가
+                                  확인되지 않았습니다. 확인되는 대로 신청 버튼이 열립니다.
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -596,8 +603,7 @@ export default function UserSearch() {
                                 {rec.reasoning}
                               </p>
                               <div className="mt-auto pt-3 border-t border-slate-100 text-xs text-slate-500">
-                                {spaceInfo.capacity_min}~{spaceInfo.capacity_max}명 ·{' '}
-                                {spaceInfo.reservation_lead_days}일 전 예약
+                                {capacityLabel(spaceInfo)} · {leadDaysLabel(spaceInfo)}
                               </div>
                             </div>
                           </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import spacesData from '../../data/spaces.json';
+import { capacityLabel, feeLabel, isIncomplete, type Space } from '../../lib/space';
 
 export const getCategoryImageUrl = (category: string) => {
   switch (category) {
@@ -26,7 +27,19 @@ export default function UserSpaces() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">공간 안내</h1>
-          <p className="text-slate-500 mt-2">모디Hub 3개 거점시설의 전체 공간을 확인해보세요.</p>
+          <p className="text-slate-500 mt-2">
+            봉화군에 등록된 {spacesData.spaces.length}개 공간입니다.
+          </p>
+
+          {/* 데이터 출처를 화면에 그대로 쓴다 — 어디까지가 확인된 정보인지 이용자가 알아야 한다 */}
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12.5px] text-slate-600 leading-relaxed">
+            <span className="material-symbols-outlined text-[15px] text-slate-400 align-middle mr-1">
+              info
+            </span>
+            MODI 3개 거점시설은 <b>준공(2026.12) 전 계획값</b>이며 실측 확인 전입니다. 농업가공교육관
+            요리실습장처럼 <b>소관 부서가 다른 시설</b>은 이용 조건이 아직 확인되지 않아 「정보 확인
+            필요」로 표시합니다. 확인되지 않은 값을 임의로 채우지 않습니다.
+          </div>
         </div>
         
         {/* Filter */}
@@ -56,6 +69,9 @@ export default function UserSpaces() {
                 <img src={getCategoryImageUrl(space.category)} alt={space.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-3 left-3 flex flex-col gap-1">
                   <span className="px-2 py-1 bg-black/60 text-white text-[10px] rounded font-medium backdrop-blur-sm shadow-sm">{space.facility}</span>
+                  {isIncomplete(space as Space) && (
+                    <span className="px-2 py-1 bg-amber-500/90 text-white text-[10px] rounded font-bold backdrop-blur-sm shadow-sm">정보 확인 필요</span>
+                  )}
                 </div>
                 <div className="absolute bottom-3 right-3 text-white">
                   <span className="px-2 py-1 bg-black/60 backdrop-blur-sm text-[10px] rounded font-medium shadow-sm">{space.floor}</span>
@@ -71,11 +87,11 @@ export default function UserSpaces() {
                   <div className="flex gap-4 text-xs font-medium text-slate-600 bg-slate-50 p-3 rounded-lg mb-4">
                     <div className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px] text-slate-400">group</span>
-                      {space.capacity_max}명
+                      {capacityLabel(space as Space)}
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px] text-slate-400">monetization_on</span>
-                      {space.fee_per_hour ? `${space.fee_per_hour.toLocaleString()}원/h` : space.fee_per_night ? `${space.fee_per_night.toLocaleString()}원/밤` : '무료'}
+                      {feeLabel(space as Space)}
                     </div>
                   </div>
                   <button className="w-full py-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl text-sm font-bold transition-colors">

@@ -34,10 +34,6 @@ export default function AdminLayout() {
           </Link>
 
           <p className="px-4 text-[11px] font-bold text-slate-400 uppercase mb-2 mt-6 tracking-wider">설정</p>
-          <Link to="/admin/rag" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${location.pathname === '/admin/rag' ? 'text-emerald-600 font-bold bg-emerald-50 border-l-4 border-emerald-500' : 'text-slate-600 hover:bg-slate-100'}`}>
-            <span className="material-symbols-outlined text-[20px]">sync</span>
-            <span className="text-sm">RAG 동기화</span>
-          </Link>
           <Link to="/admin/account" className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${location.pathname === '/admin/account' ? 'text-emerald-600 font-bold bg-emerald-50 border-l-4 border-emerald-500' : 'text-slate-600 hover:bg-slate-100'}`}>
             <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
             <span className="text-sm">계정 관리</span>

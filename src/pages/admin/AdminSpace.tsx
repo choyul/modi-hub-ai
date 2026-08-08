@@ -1,159 +1,139 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { spaces, capacityLabel, feeLabel } from '../../lib/space';
 
-const spaces = [
-  { id: 'GRE-101', facility: '그린생활지원센터', name: '키친인큐베이팅(대)', category: '키친·조리', capacity: '6~12명', fee: '5,000원/h', status: '활성' },
-  { id: 'HAE-201', facility: '해오름센터', name: '전시실 A', category: '전시·공연', capacity: '~100명', fee: '15,000원/h', status: '활성' },
-  { id: 'NEU-101', facility: '늘봄춘양', name: '다목적 공연장', category: '전시·공연', capacity: '~100명', fee: '30,000원/h', status: '활성' },
-  { id: 'NEU-303', facility: '늘봄춘양', name: '송이·약초 체험실', category: '공방·체험', capacity: '5~20명', fee: '7,000원/h', status: '활성' },
-  { id: 'HAE-101', facility: '해오름센터', name: '오픈카페 내성다방', category: '카페·라운지', capacity: '~50명', fee: '무료', status: '활성' },
-  { id: 'GRE-201', facility: '그린생활지원센터', name: '그린워크숍룸', category: '공방·체험', capacity: '5~20명', fee: '6,000원/h', status: '활성' },
+/**
+ * 공간 관리.
+ *
+ * 표준 필드(시군·시설명·공간명·용도·수용인원·면적·이용료·예약방법·위치)의
+ * 충족 상태를 담당자가 한눈에 보는 화면. 비어 있는 칸을 그럴듯하게 채우지 않고
+ * 비어 있다고 표시하는 것이 이 화면의 목적이다.
+ */
+
+const REQUIRED: { key: string; label: string }[] = [
+  { key: 'capacity_max', label: '수용인원' },
+  { key: 'area_sqm', label: '면적' },
+  { key: 'reservation_method', label: '예약방법' },
+  { key: 'location', label: '위치' },
+  { key: 'contact', label: '연락처' },
 ];
 
+function missingFields(s: any) {
+  return REQUIRED.filter((f) => s[f.key] == null || s[f.key] === '').map((f) => f.label);
+}
+
 export default function AdminSpace() {
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [onlyIncomplete, setOnlyIncomplete] = useState(false);
+  const [facility, setFacility] = useState('all');
+
+  const facilities = useMemo(() => [...new Set(spaces.map((s) => s.facility))], []);
+
+  const rows = spaces.filter((s) => {
+    if (facility !== 'all' && s.facility !== facility) return false;
+    if (onlyIncomplete && missingFields(s).length === 0) return false;
+    return true;
+  });
+
+  const incompleteCount = spaces.filter((s) => missingFields(s).length > 0).length;
+  const unverifiedCount = spaces.filter((s) => !(s as any).verified).length;
 
   return (
     <div className="p-8 pb-20">
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">공간 관리</h1>
-          <p className="text-slate-500 mt-1">3개 거점시설 30개 공간의 세부 정보를 관리합니다.</p>
-        </div>
-        <button className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          새 공간 등록
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">공간 관리</h1>
+        <p className="text-slate-500 mt-1">
+          등록 {spaces.length}건 · 필드 누락 {incompleteCount}건 · 실측 확인 전 {unverifiedCount}건
+        </p>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 text-[13px] text-slate-700 leading-relaxed">
+        <b className="text-slate-900">데이터 상태</b> — MODI 3개소는 준공(2026.12) 전 계획값입니다.
+        농업가공교육관 요리실습장은 농업기술센터 소관이라 도시재생팀이 값을 보유하고 있지 않습니다.
+        <b> 정보가 부서 경계에서 막히는 것이 이 서비스가 푸는 문제 그 자체</b>이므로, 빈 칸을
+        임의로 채우지 않고 빈 칸으로 둡니다.
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        <select
+          value={facility}
+          onChange={(e) => setFacility(e.target.value)}
+          className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 outline-none"
+        >
+          <option value="all">모든 시설</option>
+          {facilities.map((f) => (
+            <option key={f} value={f}>
+              {f}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => setOnlyIncomplete(!onlyIncomplete)}
+          className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+            onlyIncomplete
+              ? 'bg-amber-500 text-white'
+              : 'bg-white border border-slate-200 text-slate-600'
+          }`}
+        >
+          누락 항목만 보기
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
-              <tr>
-                <th className="px-6 py-4 font-bold">공간 ID</th>
-                <th className="px-6 py-4 font-bold">시설</th>
-                <th className="px-6 py-4 font-bold">공간명</th>
-                <th className="px-6 py-4 font-bold">카테고리</th>
-                <th className="px-6 py-4 font-bold">수용 인원</th>
-                <th className="px-6 py-4 font-bold">이용료</th>
-                <th className="px-6 py-4 font-bold">상태</th>
-                <th className="px-6 py-4 font-bold">작업</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {spaces.map(space => (
-                <tr key={space.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs text-slate-500">{space.id}</td>
-                  <td className="px-6 py-4 text-slate-600">{space.facility}</td>
-                  <td className="px-6 py-4 font-bold text-slate-900">{space.name}</td>
-                  <td className="px-6 py-4 text-slate-600">{space.category}</td>
-                  <td className="px-6 py-4 text-slate-600">{space.capacity}</td>
-                  <td className="px-6 py-4 text-slate-600">{space.fee}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      {space.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button onClick={() => setEditingId(space.id)} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 rounded-lg text-xs font-bold transition-colors">편집</button>
-                      <button className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold transition-colors">복제</button>
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-slate-500 text-xs">
+            <tr>
+              <th className="px-4 py-3 text-left font-bold">시군</th>
+              <th className="px-4 py-3 text-left font-bold">시설 · 공간</th>
+              <th className="px-4 py-3 text-left font-bold">소관</th>
+              <th className="px-4 py-3 text-left font-bold">수용인원</th>
+              <th className="px-4 py-3 text-left font-bold">이용료</th>
+              <th className="px-4 py-3 text-left font-bold">누락 필드</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.map((s) => {
+              const missing = missingFields(s);
+              return (
+                <tr
+                  key={s.id}
+                  className={missing.length ? 'bg-amber-50/40' : ''}
+                >
+                  <td className="px-4 py-3 text-slate-500 text-xs">{(s as any).sigungu}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-bold text-slate-900">{s.name}</div>
+                    <div className="text-xs text-slate-500">
+                      {s.facility} · {s.floor} · {s.category}
                     </div>
                   </td>
+                  <td className="px-4 py-3 text-xs text-slate-600">{(s as any).owner_dept}</td>
+                  <td className="px-4 py-3 text-xs text-slate-600">{capacityLabel(s)}</td>
+                  <td className="px-4 py-3 text-xs text-slate-600">{feeLabel(s)}</td>
+                  <td className="px-4 py-3">
+                    {missing.length === 0 ? (
+                      <span className="text-xs text-emerald-600 font-bold">완비</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {missing.map((m) => (
+                          <span
+                            key={m}
+                            className="px-2 py-0.5 bg-amber-100 text-amber-800 text-[11px] font-bold rounded"
+                          >
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
-      {editingId && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <h2 className="text-lg font-bold text-slate-900">공간 편집: {editingId}</h2>
-              <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-slate-600">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <div className="p-6 overflow-y-auto flex-1 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-2">거점시설</label>
-                  <select className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                    <option>그린생활지원센터</option>
-                    <option>해오름센터</option>
-                    <option>늘봄춘양</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-2">카테고리</label>
-                  <select className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                    <option>키친·조리</option>
-                    <option>회의·교육</option>
-                    <option>공방·체험</option>
-                    <option>전시·공연</option>
-                    <option>숙박</option>
-                    <option>카페·라운지</option>
-                    <option>야외</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-2">공간명</label>
-                  <input type="text" defaultValue={spaces.find(s => s.id === editingId)?.name} className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-2">층수</label>
-                    <input type="text" defaultValue="1F" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-2">면적(㎡)</label>
-                    <input type="number" defaultValue="90" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-2">최소 인원</label>
-                    <input type="number" defaultValue="6" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-2">최대 인원</label>
-                    <input type="number" defaultValue="12" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-2">시간당 요금(원)</label>
-                  <input type="number" defaultValue="5000" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 mb-2">장비 태그</label>
-                  <input type="text" defaultValue="업소용 조리대 2조, HACCP 설비, 대형 냉장고" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 mb-2">적합 활동 태그</label>
-                  <input type="text" defaultValue="단체 김장, 발효 워크숍, 식자재 사전신청" className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 mb-2 flex justify-between">
-                    <span>AI 추천용 설명</span>
-                    <span className="text-emerald-500 flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">auto_awesome</span> AI 프롬프트 주입용</span>
-                  </label>
-                  <textarea rows={3} defaultValue="대규모 식품 조리 및 김장체험 등 특별한 목적의 활동이 가능한 맞춤형 공간입니다." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"></textarea>
-                </div>
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-              <button onClick={() => setEditingId(null)} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">취소</button>
-              <button className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-emerald-700 transition-colors flex items-center gap-2">
-                저장 → AI에 반영
-                <span className="material-symbols-outlined text-[18px]">publish</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <p className="text-xs text-slate-400 mt-4">
+        편집은 <code className="bg-slate-100 px-1 rounded">src/data/spaces.json</code> 을 직접
+        수정합니다. 담당자 편집 UI는 실제 값 확보 이후 단계입니다.
+      </p>
     </div>
   );
 }

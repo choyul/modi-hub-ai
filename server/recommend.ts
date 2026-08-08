@@ -56,14 +56,21 @@ function lightweightSpaces() {
     facility: s.facility,
     name: s.name,
     category: s.category,
-    capacity: `${s.capacity_min}~${s.capacity_max}명`,
+    capacity:
+      s.capacity_max == null ? '미확인' : `${s.capacity_min}~${s.capacity_max}명`,
     features: s.features,
     specialty: s.specialty || '',
-    fee: s.fee_per_hour
-      ? `${s.fee_per_hour}원/시간`
-      : s.fee_per_night
-      ? `${s.fee_per_night}원/1박`
-      : '무료',
+    fee:
+      s.fee_per_hour != null
+        ? s.fee_per_hour === 0
+          ? '무료'
+          : `${s.fee_per_hour}원/시간`
+        : s.fee_per_night != null
+        ? `${s.fee_per_night}원/1박`
+        : '미확인',
+    owner_dept: s.owner_dept,
+    // 값이 확인되지 않은 공간임을 모델에게도 알린다
+    info_status: s.verified ? '확인됨' : s.capacity_max == null ? '미확인' : '준공 전 계획값',
   }));
 }
 
@@ -81,7 +88,10 @@ const SYSTEM_RULES = `당신은 경북 봉화군 MODI Hub 공간 안내 담당�
   matched 가 하나라도 있으면 unmetType 은 null 입니다.
 - matchScore 는 조건 일치도(0~100)이며 근거 없이 90 이상을 남발하지 마십시오.
 - 지역이 명시됐는데 데이터에 그 지역 공간이 없으면 matched 는 빈 배열이고
-  unmetType 에 "<지역> 내 <유형>" 형태로 적습니다.`;
+  unmetType 에 "<지역> 내 <유형>" 형태로 적습니다.
+- info_status 가 "미확인"인 공간은 수용 인원·이용료가 아직 확인되지 않았습니다.
+  용도가 맞으면 추천하되, reasoning 첫 문장에 반드시 "이용 조건이 아직 확인되지 않은 공간입니다"를
+  넣고 matchScore 를 70 이하로 둡니다. 확인되지 않은 수치를 지어내지 마십시오.`;
 
 function buildPrompt(query: string) {
   return `${SYSTEM_RULES}
