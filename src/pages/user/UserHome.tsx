@@ -49,8 +49,8 @@ export default function UserHome() {
             ].map((tag, idx) => {
               const bgColors = ["bg-indigo-50 text-indigo-700 border-indigo-100", "bg-emerald-50 text-emerald-700 border-emerald-100", "bg-amber-50 text-amber-700 border-amber-100", "bg-sky-50 text-sky-700 border-sky-100"];
               return (
-                <button 
-                  key={tag} 
+                <button
+                  key={tag}
                   onClick={() => setQuery(tag)}
                   className={`text-xs px-2.5 py-1 rounded border ${bgColors[idx % bgColors.length]} font-medium transition-transform hover:scale-105`}
                 >
@@ -58,6 +58,39 @@ export default function UserHome() {
                 </button>
               );
             })}
+          </div>
+
+          {/* [원칙 1] 기대 설정 — 할 수 있는 것/없는 것을 미리 알려 첫인상과 기대치를 조율 */}
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="flex items-start gap-2 mb-3">
+              <span className="material-symbols-outlined text-[18px] text-indigo-500 mt-0.5">lightbulb</span>
+              <p className="text-[13px] text-slate-600 leading-relaxed">
+                MODI Hub AI는 조건에 맞는 <b className="text-slate-800">공간을 추천</b>해 드립니다.
+                실제 <b className="text-slate-800">예약 확정은 담당자 확인 후</b> 완료돼요.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="rounded-lg bg-white border border-slate-100 px-3 py-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 mb-1.5">
+                  <span className="material-symbols-outlined text-[15px]">check_circle</span> 지금 할 수 있어요
+                </div>
+                <ul className="text-[11.5px] text-slate-500 space-y-0.5 leading-snug">
+                  <li>· 목적·인원에 맞는 공간 추천</li>
+                  <li>· 추천 이유·조건 근거 설명</li>
+                  <li>· 거리·시간·유형 미세조정</li>
+                </ul>
+              </div>
+              <div className="rounded-lg bg-white border border-slate-100 px-3 py-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 mb-1.5">
+                  <span className="material-symbols-outlined text-[15px]">schedule</span> 담당자 확인이 필요해요
+                </div>
+                <ul className="text-[11.5px] text-slate-500 space-y-0.5 leading-snug">
+                  <li>· 실시간 예약 가능 여부·확정</li>
+                  <li>· 결제·환불 처리</li>
+                  <li>· 특수 설비·추가 요청</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 
