@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams, useNavigate } from 'react-router';
 import spacesData from '../../data/spaces.json';
 import { capacityLabel, feeLabel, isIncomplete, type Space } from '../../lib/space';
 
@@ -16,11 +16,19 @@ export const getCategoryImageUrl = (category: string) => {
 };
 
 export default function UserSpaces() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  
-  const filteredSpaces = selectedCategory === 'all' 
-    ? spacesData.spaces 
-    : spacesData.spaces.filter(s => s.category === selectedCategory);
+  // 홈에서 /spaces?category=... 로 들어오는 경로를 받는다 (G10 대안 경로)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const selectedCategory = searchParams.get('category') || 'all';
+
+  const setSelectedCategory = (cat: string) => {
+    setSearchParams(cat === 'all' ? {} : { category: cat }, { replace: true });
+  };
+
+  const filteredSpaces =
+    selectedCategory === 'all'
+      ? spacesData.spaces
+      : spacesData.spaces.filter((s) => s.category === selectedCategory);
 
   return (
     <div className="bg-slate-50 min-h-[calc(100vh-80px)] pb-20">
@@ -60,6 +68,36 @@ export default function UserSpaces() {
             </button>
           ))}
         </div>
+
+        {/* 0건 상태 — 화면 상태 6종 중 빠져 있던 항목 */}
+        {filteredSpaces.length === 0 && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
+            <span className="material-symbols-outlined text-4xl text-slate-300 mb-3 block" aria-hidden="true">
+              search_off
+            </span>
+            <h2 className="font-bold text-slate-800 mb-1">
+              「{selectedCategory}」 유형으로 등록된 공간이 아직 없습니다
+            </h2>
+            <p className="text-sm text-slate-500 mb-5">
+              봉화에 이 유형의 공간이 없다는 뜻입니다. 필요하시면 검색으로 알려 주세요 — 없는
+              공간을 찾은 기록이 다음 유휴공간 활용의 근거가 됩니다.
+            </p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm"
+              >
+                전체 공간 보기
+              </button>
+              <button
+                onClick={() => navigate(`/search?q=${encodeURIComponent(selectedCategory + ' 공간을 찾고 있어요')}`)}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm"
+              >
+                이 유형으로 검색해 보기
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

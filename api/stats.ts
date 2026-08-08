@@ -11,8 +11,18 @@ import {
   readSearchLogs,
   readDemands,
   readReservations,
+  readFeedback,
+  latestById,
   isPersistent,
 } from '../server/store';
+
+const REASON_LABEL: Record<string, string> = {
+  far: '너무 멀어요',
+  time: '시간이 안 맞아요',
+  cost: '비용이 부담돼요',
+  type: '원하는 유형이 아니에요',
+  other: '기타',
+};
 
 function countBy<T>(items: T[], key: (t: T) => string | null) {
   const map = new Map<string, number>();
@@ -33,11 +43,13 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const [logs, demands, reservations] = await Promise.all([
+    const [logs, demands, rawReservations, feedback] = await Promise.all([
       readSearchLogs(500),
       readDemands(500),
       readReservations(500),
+      readFeedback(500),
     ]);
+    const reservations = latestById(rawReservations);
 
     const unmetLogs = logs.filter((l) => l.outcome === 'unmet');
     const adminToken = process.env.ADMIN_TOKEN;
@@ -47,6 +59,8 @@ export default async function handler(req: any, res: any) {
       // 저장소 상태를 숨기지 않는다 — 메모리 폴백이면 화면에 그대로 표시된다
       persisted: isPersistent,
       detailAuthorized: authorized,
+      // 서버에 토큰이 아예 없으면 담당자가 로그인할 방법이 없다 — 화면에서 구분해야 한다
+      tokenConfigured: Boolean(adminToken),
       detailNotice: adminToken
         ? null
         : 'ADMIN_TOKEN이 설정되지 않아 원문 질의 목록은 내려보내지 않습니다.',
@@ -60,6 +74,8 @@ export default async function handler(req: any, res: any) {
         // 성공 수요(신청)와 실패 수요(미충족)를 한 화면에서 대조하기 위한 값
         reservationCount: reservations.length,
         pendingReservations: reservations.filter((r) => r.status === '승인대기').length,
+        cancelledReservations: reservations.filter((r) => r.status === '취소').length,
+        feedbackCount: feedback.length,
         avgLatencyMs: logs.length
           ? Math.round(logs.reduce((a, l) => a + (l.latencyMs || 0), 0) / logs.length)
           : 0,
@@ -67,6 +83,8 @@ export default async function handler(req: any, res: any) {
       // 없는 시설 유형 집계 — 성공기준 §6 "실패 로그에서 없는 시설 유형이 집계되는가"
       unmetTypes: countBy(unmetLogs, (l) => l.unmetType),
       regions: countBy(logs, (l) => l.parsed?.region),
+      // 성공했는데도 맞지 않았다는 신호 — 이탈 지점을 사유별로 본다
+      feedbackReasons: countBy(feedback, (f) => REASON_LABEL[f.reason] || f.reason),
       topShownSpaces: countBy(
         logs.flatMap((l) => l.shownSpaceIds.map((id) => ({ id }))),
         (s) => s.id
@@ -76,6 +94,7 @@ export default async function handler(req: any, res: any) {
         : logs.slice(0, 50).map((l) => ({ ...l, rawQuery: '[비공개]' })),
       demands: authorized ? demands.slice(0, 50) : [],
       reservations: authorized ? reservations.slice(0, 50) : [],
+      feedback: authorized ? feedback.slice(0, 50) : [],
     });
   } catch (err) {
     console.error('집계 실패:', err);

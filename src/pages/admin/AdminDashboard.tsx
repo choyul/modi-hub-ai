@@ -166,6 +166,17 @@ export default function AdminDashboard() {
           />
         </Panel>
 
+        <Panel
+          title="추천이 맞지 않았다는 신호"
+          subtitle="성공 검색인데도 사용자가 남긴 이탈 사유 — 왜 안 쓰게 되는가"
+        >
+          <BarList
+            items={stats.feedbackReasons}
+            emptyTitle="아직 접수된 피드백이 없습니다"
+            emptyDesc="검색 결과 화면의 '이 추천이 맞지 않나요?'에서 들어옵니다."
+          />
+        </Panel>
+
         <Panel title="응답 성능" subtitle="검색 1건당 AI 응답까지 걸린 시간">
           {s.totalSearches === 0 ? (
             <EmptyState icon="speed" title="측정된 검색이 없습니다" />

@@ -23,6 +23,7 @@ import {
 
 interface MatchedSpace {
   id: string;
+  /** 서버의 정렬 근거. 검증할 수 없는 값이므로 화면에는 노출하지 않는다 (HAX G2) */
   matchScore: number;
   reasoning: string;
 }
@@ -87,6 +88,9 @@ export default function UserSearch() {
   const [contact, setContact] = useState('');
   const [wantsNotice, setWantsNotice] = useState(false);
 
+  // HAX G15·G17 — 추천이 맞지 않았다는 신호를 받을 곳
+  const [feedbackSent, setFeedbackSent] = useState<string | null>(null);
+
   useEffect(() => {
     if (!query) {
       navigate('/');
@@ -102,6 +106,7 @@ export default function UserSearch() {
       setDemandState('idle');
       setContact('');
       setWantsNotice(false);
+      setFeedbackSent(null);
 
       try {
         const res = await fetch('/api/recommend-spaces', {
@@ -144,6 +149,24 @@ export default function UserSearch() {
       // 등록 실패도 숨기지 않는다
       setDemandState('idle');
       alert('수요 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    }
+  }
+
+  async function sendFeedback(reason: string, label: string) {
+    // 낙관적 반영: 신호를 보냈다는 사실이 즉시 보여야 한다
+    setFeedbackSent(label);
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rawQuery: query,
+          spaceId: result?.matched[0]?.id ?? null,
+          reason,
+        }),
+      });
+    } catch {
+      setFeedbackSent(null);
     }
   }
 
@@ -414,6 +437,19 @@ export default function UserSearch() {
               </span>
             </div>
 
+            {/* 부분 성공 — 추천은 됐지만 기록이 임시 저장소에만 남은 경우 */}
+            {result.persisted === false && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-800 flex items-start gap-2">
+                <span className="material-symbols-outlined text-[16px] mt-0.5" aria-hidden="true">
+                  warning
+                </span>
+                <span>
+                  추천은 정상 처리됐지만, 저장소가 연결되지 않아 이 검색 기록은 임시로만 남습니다.
+                  담당자 화면 집계에 반영되지 않을 수 있습니다.
+                </span>
+              </div>
+            )}
+
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-200">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <span className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
@@ -431,10 +467,14 @@ export default function UserSearch() {
 
                   return (
                     <div className="relative border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
-                      {/* [원칙 3] 확신 수치를 '적합도 + 산출 근거'로 정직하게 표현 */}
-                      <div className="absolute top-4 right-4 bg-white/95 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold z-10 shadow-sm border border-indigo-100 text-right">
-                        <div className="font-mono">추천 적합도 {rec.matchScore}%</div>
-                        <div className="text-[9px] font-normal text-slate-400">조건 일치도</div>
+                      {/*
+                        HAX G2 — AI가 만들어낸 확신 수치(%)를 그대로 보여주지 않는다.
+                        "적합도 96%"는 검증할 수 없는 숫자라 신뢰를 잘못 보정한다.
+                        대신 검증 가능한 상대 표현(추천 1순위)만 쓰고, 판단 근거는
+                        아래 '추천한 근거' 표의 실제 데이터로 넘긴다.
+                      */}
+                      <div className="absolute top-4 right-4 bg-white/95 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold z-10 shadow-sm border border-indigo-100">
+                        추천 1순위
                       </div>
 
                       <div className="md:flex">
@@ -566,7 +606,7 @@ export default function UserSearch() {
                       이런 공간도 고려해보세요
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {result.matched.slice(1).map((rec) => {
+                      {result.matched.slice(1).map((rec, idx) => {
                         const spaceInfo = findSpace(rec.id);
                         if (!spaceInfo) return null;
                         return (
@@ -581,7 +621,7 @@ export default function UserSearch() {
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
                               <div className="absolute top-2 right-2 bg-white/90 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">
-                                적합도 {rec.matchScore}%
+                                추천 {idx + 2}순위
                               </div>
                               <div className="absolute bottom-2 left-2">
                                 <span className="px-1.5 py-0.5 bg-black/50 text-white text-[10px] rounded backdrop-blur-sm">
@@ -613,6 +653,63 @@ export default function UserSearch() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/*
+              HAX G15·G17 — 부정 피드백을 받을 곳.
+              이전 화면에는 눌러도 아무 데도 가지 않는 칩만 있었다. 지금은 실제로
+              /api/feedback 에 적재되어 담당자 화면의 이탈 사유 집계로 이어진다.
+            */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              {feedbackSent ? (
+                <div className="flex items-start gap-2">
+                  <span
+                    className="material-symbols-outlined text-[18px] text-emerald-600 mt-0.5"
+                    aria-hidden="true"
+                  >
+                    check_circle
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">
+                      「{feedbackSent}」로 전달했습니다
+                    </p>
+                    <p className="text-[12.5px] text-slate-500 mt-0.5">
+                      같은 사유가 쌓이면 담당자가 그 지점을 먼저 검토합니다.{' '}
+                      <button
+                        onClick={() => setFeedbackSent(null)}
+                        className="font-bold text-indigo-600 hover:underline"
+                      >
+                        되돌리기
+                      </button>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-[13px] font-bold text-slate-700 mb-1">
+                    이 추천이 맞지 않나요?
+                  </p>
+                  <p className="text-[12px] text-slate-400 mb-3">
+                    한 번만 눌러 주시면 됩니다. 이유를 알아야 다음에 더 잘 찾아드릴 수 있어요.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: 'far', label: '너무 멀어요' },
+                      { key: 'time', label: '시간이 안 맞아요' },
+                      { key: 'cost', label: '비용이 부담돼요' },
+                      { key: 'type', label: '원하는 유형이 아니에요' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.key}
+                        onClick={() => sendFeedback(opt.key, opt.label)}
+                        className="px-3 py-2 rounded-full text-[12.5px] font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors min-h-[36px]"
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* [원칙 5] 주도권 — 조건 변경 재검색 */}

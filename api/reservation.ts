@@ -8,7 +8,13 @@
  * 신청(성공 수요)과 미충족 수요(실패)를 같은 저장소에 남겨야
  * 담당자가 "무엇이 쓰였고 무엇이 없었는가"를 한 화면에서 볼 수 있다.
  */
-import { appendReservation, readReservations, isPersistent } from '../server/store';
+import {
+  appendReservation,
+  readReservations,
+  cancelReservation,
+  latestById,
+  isPersistent,
+} from '../server/store';
 import spacesData from '../src/data/spaces.json';
 
 const VALID_IDS = new Set(spacesData.spaces.map((s: any) => s.id));
@@ -21,7 +27,7 @@ function makeId(ts: Date, seq: string) {
 export default async function handler(req: any, res: any) {
   if (req.method === 'GET') {
     try {
-      const all = await readReservations(200);
+      const all = latestById(await readReservations(200));
       const applicant = String(req.query?.applicant || '').trim();
       const list = applicant ? all.filter((r) => r.applicant === applicant) : all;
       return res.status(200).json({ reservations: list, persisted: isPersistent });
@@ -31,9 +37,27 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  // 되돌릴 수단 (HAX G8) — 승인대기 건은 신청자가 직접 취소할 수 있다
+  if (req.method === 'DELETE') {
+    const id = String(req.body?.id || req.query?.id || '').trim();
+    const applicant = String(req.body?.applicant || req.query?.applicant || '').trim();
+    if (!id || !applicant) {
+      return res.status(400).json({ error: '취소할 신청을 찾을 수 없습니다.' });
+    }
+    try {
+      const result = await cancelReservation(id, applicant);
+      if (!result) return res.status(404).json({ error: '해당 신청 내역이 없습니다.' });
+      if ('error' in result) return res.status(409).json({ error: result.error });
+      return res.status(200).json(result);
+    } catch (err) {
+      console.error('예약 취소 실패:', err);
+      return res.status(500).json({ error: '취소 처리에 실패했습니다.' });
+    }
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'GET, POST');
-    return res.status(405).json({ error: 'GET 또는 POST만 허용됩니다.' });
+    res.setHeader('Allow', 'GET, POST, DELETE');
+    return res.status(405).json({ error: 'GET, POST, DELETE만 허용됩니다.' });
   }
 
   const b = req.body || {};

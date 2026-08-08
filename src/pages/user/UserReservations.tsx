@@ -20,7 +20,7 @@ interface Reservation {
   useTime: string;
   headcount: number;
   purpose: string;
-  status: '승인대기' | '예약확정' | '반려';
+  status: '승인대기' | '예약확정' | '반려' | '취소';
 }
 
 const findSpace = (id: string) => spacesData.spaces.find((s) => s.id === id);
@@ -42,6 +42,9 @@ export default function UserReservations() {
   const [purpose, setPurpose] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // 제출 직전 확인 단계 — 공공 예약은 잘못 넣으면 민원이 된다
+  const [confirming, setConfirming] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null);
 
   async function load() {
     if (!userName) return;
@@ -65,8 +68,13 @@ export default function UserReservations() {
 
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
-  async function submitApplication(e: FormEvent) {
+  function reviewApplication(e: FormEvent) {
     e.preventDefault();
+    setFormError(null);
+    setConfirming(true);
+  }
+
+  async function submitApplication() {
     if (!applySpace) return;
     setSubmitting(true);
     setFormError(null);
@@ -85,12 +93,31 @@ export default function UserReservations() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || '신청에 실패했습니다.');
+      setConfirming(false);
       navigate('/reservations', { replace: true });
       await load();
     } catch (err: any) {
       setFormError(err.message);
+      setConfirming(false);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function cancelApplication(id: string) {
+    try {
+      const res = await fetch('/api/reservation', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, applicant: userName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || '취소에 실패했습니다.');
+      setCancelTarget(null);
+      await load();
+    } catch (err: any) {
+      alert(err.message);
+      setCancelTarget(null);
     }
   }
 
@@ -109,13 +136,14 @@ export default function UserReservations() {
               </p>
             </div>
 
-            <form onSubmit={submitApplication} className="space-y-4">
+            <form onSubmit={reviewApplication} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                  <label htmlFor="use-date" className="block text-sm font-bold text-slate-700 mb-1.5">
                     이용 희망일
                   </label>
                   <input
+                    id="use-date"
                     type="date"
                     required
                     value={useDate}
@@ -124,10 +152,11 @@ export default function UserReservations() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5">
+                  <label htmlFor="use-time" className="block text-sm font-bold text-slate-700 mb-1.5">
                     이용 시간 <span className="font-normal text-slate-400">(선택)</span>
                   </label>
                   <input
+                    id="use-time"
                     type="text"
                     value={useTime}
                     onChange={(e) => setUseTime(e.target.value)}
@@ -138,8 +167,11 @@ export default function UserReservations() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">이용 인원</label>
+                <label htmlFor="headcount" className="block text-sm font-bold text-slate-700 mb-1.5">
+                  이용 인원
+                </label>
                 <input
+                  id="headcount"
                   type="number"
                   required
                   min={1}
@@ -152,8 +184,11 @@ export default function UserReservations() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">이용 목적</label>
+                <label htmlFor="purpose" className="block text-sm font-bold text-slate-700 mb-1.5">
+                  이용 목적
+                </label>
                 <input
+                  id="purpose"
                   type="text"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
@@ -177,20 +212,70 @@ export default function UserReservations() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-sm transition-colors"
+                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors"
                 >
-                  {submitting ? '접수 중…' : '신청 접수하기'}
+                  신청 내용 확인하기
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate('/reservations', { replace: true })}
                   className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm"
                 >
-                  취소
+                  그만두기
                 </button>
               </div>
             </form>
+
+            {/*
+              제출 직전 확인 단계.
+              공공 대관은 잘못 접수되면 담당자 반려·재신청·민원으로 이어지므로,
+              한 번 더 눈으로 확인하고 되돌아갈 수 있어야 한다.
+            */}
+            {confirming && (
+              <div
+                className="fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="confirm-title"
+              >
+                <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6">
+                  <h3 id="confirm-title" className="text-lg font-bold text-slate-900 mb-1">
+                    이 내용으로 신청할까요?
+                  </h3>
+                  <p className="text-[12.5px] text-slate-500 mb-4">
+                    접수 후에도 승인 전까지는 직접 취소할 수 있습니다.
+                  </p>
+                  <dl className="rounded-xl border border-slate-200 divide-y divide-slate-100 mb-5">
+                    {[
+                      ['공간', `${applySpace.name} (${applySpace.facility})`],
+                      ['이용일', `${useDate} ${useTime || ''}`.trim()],
+                      ['인원', `${headcount}명`],
+                      ['목적', purpose || '기재 없음'],
+                    ].map(([k, v]) => (
+                      <div key={k} className="flex px-4 py-2.5 text-sm">
+                        <dt className="w-20 shrink-0 text-slate-400">{k}</dt>
+                        <dd className="font-medium text-slate-800">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={submitApplication}
+                      disabled={submitting}
+                      className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-sm"
+                    >
+                      {submitting ? '접수 중…' : '네, 신청합니다'}
+                    </button>
+                    <button
+                      onClick={() => setConfirming(false)}
+                      className="px-5 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm"
+                    >
+                      고치기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -232,7 +317,7 @@ export default function UserReservations() {
                         className={`px-2 py-1 text-[11px] font-bold rounded ${
                           rev.status === '예약확정'
                             ? 'bg-indigo-100 text-indigo-700'
-                            : rev.status === '반려'
+                            : rev.status === '반려' || rev.status === '취소'
                             ? 'bg-slate-200 text-slate-600'
                             : 'bg-amber-100 text-amber-700'
                         }`}
@@ -259,12 +344,47 @@ export default function UserReservations() {
                         {rev.headcount}명
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[16px] text-slate-400">
+                        <span className="material-symbols-outlined text-[16px] text-slate-400" aria-hidden="true">
                           label
                         </span>
                         {rev.purpose}
                       </div>
                     </div>
+
+                    {/* HAX G8 — 되돌릴 수단. 승인 전에는 신청자가 직접 취소할 수 있다 */}
+                    {rev.status === '승인대기' &&
+                      (cancelTarget === rev.id ? (
+                        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
+                          <p className="text-sm font-bold text-slate-800 mb-1">
+                            이 신청을 취소할까요?
+                          </p>
+                          <p className="text-[12.5px] text-slate-600 mb-3">
+                            취소하면 담당자 목록에서도 취소로 표시됩니다. 다시 신청하려면 처음부터
+                            접수해야 합니다.
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => cancelApplication(rev.id)}
+                              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold"
+                            >
+                              네, 취소합니다
+                            </button>
+                            <button
+                              onClick={() => setCancelTarget(null)}
+                              className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-bold"
+                            >
+                              그대로 두기
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setCancelTarget(rev.id)}
+                          className="mt-4 px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50"
+                        >
+                          신청 취소
+                        </button>
+                      ))}
                   </li>
                 );
               })}

@@ -39,8 +39,9 @@ export default function UserLogin() {
           {error && <div className="p-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl whitespace-pre-wrap">{error}</div>}
           
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-1.5">이메일</label>
+            <label htmlFor="login-email" className="block text-sm font-bold text-slate-700 mb-1.5">이메일</label>
             <input 
+              id="login-email"
               type="email" 
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -50,8 +51,9 @@ export default function UserLogin() {
           </div>
           
           <div className="relative">
-            <label className="block text-sm font-bold text-slate-700 mb-1.5">비밀번호</label>
+            <label htmlFor="login-password" className="block text-sm font-bold text-slate-700 mb-1.5">비밀번호</label>
             <input 
+              id="login-password"
               type={showPassword ? "text" : "password"} 
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -60,6 +62,7 @@ export default function UserLogin() {
             />
             <button 
               type="button"
+              aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-9 text-slate-400 hover:text-slate-600 transition-colors"
             >

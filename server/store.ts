@@ -20,6 +20,7 @@ const REDIS_TOKEN =
 const LOG_KEY = 'modi:searchlog';
 const DEMAND_KEY = 'modi:demand';
 const RESERVATION_KEY = 'modi:reservation';
+const FEEDBACK_KEY = 'modi:feedback';
 const MAX_ENTRIES = 2000;
 
 export const isPersistent = Boolean(REDIS_URL && REDIS_TOKEN);
@@ -66,7 +67,20 @@ export interface Reservation {
   purpose: string;
   contact: string | null;
   /** 담당자 승인 전까지는 항상 '승인대기'. 자동 확정하지 않는다 */
-  status: '승인대기' | '예약확정' | '반려';
+  status: '승인대기' | '예약확정' | '반려' | '취소';
+}
+
+/**
+ * 추천이 맞지 않았다는 신호. HAX G15·G17 — 부정 피드백을 받을 곳이 없으면
+ * 사용자는 그냥 떠나고, 왜 떠났는지는 영영 알 수 없다.
+ */
+export interface Feedback {
+  ts: string;
+  rawQuery: string;
+  spaceId: string | null;
+  /** far | time | cost | type | other */
+  reason: string;
+  note: string | null;
 }
 
 /** 메모리 폴백 (서버리스에서는 인스턴스 단위로 휘발) */
@@ -74,10 +88,12 @@ const memory: {
   logs: SearchLog[];
   demands: DemandRegistration[];
   reservations: Reservation[];
+  feedback: Feedback[];
 } = {
   logs: [],
   demands: [],
   reservations: [],
+  feedback: [],
 };
 
 async function redis(command: (string | number)[]): Promise<any> {
@@ -157,3 +173,40 @@ export const appendReservation = (r: Reservation) =>
 
 export const readReservations = (limit = 500) =>
   readAll<Reservation>(RESERVATION_KEY, memory.reservations, limit);
+
+export const appendFeedback = (f: Feedback) =>
+  push(FEEDBACK_KEY, memory.feedback, {
+    ...f,
+    rawQuery: scrub(f.rawQuery),
+    note: f.note ? scrub(f.note) : null,
+  });
+
+export const readFeedback = (limit = 500) =>
+  readAll<Feedback>(FEEDBACK_KEY, memory.feedback, limit);
+
+/**
+ * 신청 취소. 되돌릴 수단이 없는 화면은 사용자를 가둔다(HAX G8).
+ * 리스트를 통째로 다시 쓰지 않고 취소 이벤트를 덧붙여, 취소 이력도 남긴다.
+ */
+export async function cancelReservation(id: string, applicant: string) {
+  const all = await readReservations(500);
+  const target = all.find((r) => r.id === id && r.applicant === applicant);
+  if (!target) return null;
+  if (target.status !== '승인대기') return { error: '승인대기 상태에서만 취소할 수 있습니다.' };
+
+  const cancelled: Reservation = { ...target, status: '취소' };
+  await push(RESERVATION_KEY, memory.reservations, cancelled);
+  return { reservation: cancelled };
+}
+
+/** 같은 id가 여러 번 쌓였을 때 가장 최근 상태만 남긴다 */
+export function latestById(list: Reservation[]): Reservation[] {
+  const seen = new Set<string>();
+  const out: Reservation[] = [];
+  for (const r of list) {
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    out.push(r);
+  }
+  return out;
+}

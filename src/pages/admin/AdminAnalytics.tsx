@@ -12,7 +12,7 @@ import { StorageBadge, Panel, BarList, EmptyState } from '../../components/Admin
 
 const spaceName = (id: string) => spacesData.spaces.find((s) => s.id === id)?.name || id;
 
-type TabId = 'unmet' | 'demand' | 'interest' | 'reservation';
+type TabId = 'unmet' | 'demand' | 'feedback' | 'interest' | 'reservation';
 
 export default function AdminAnalytics() {
   const [tab, setTab] = useState<TabId>('unmet');
@@ -41,6 +41,7 @@ export default function AdminAnalytics() {
   const tabs: { id: TabId; label: string }[] = [
     { id: 'unmet', label: `⚠️ 미충족 수요 ${s.unmetCount}` },
     { id: 'demand', label: `📮 등록된 수요 ${s.registeredDemands}` },
+    { id: 'feedback', label: `👎 이탈 신호 ${s.feedbackCount}` },
     { id: 'interest', label: '🏢 공간별 관심도' },
     { id: 'reservation', label: `📋 대관 신청 ${s.reservationCount}` },
   ];
@@ -136,7 +137,7 @@ export default function AdminAnalytics() {
               desc={
                 stats.detailAuthorized
                   ? `동의 기반 등록은 ${s.registeredDemands}건입니다.`
-                  : '응대 로그 화면에서 ADMIN_TOKEN을 입력해 주세요.'
+                  : '담당자 로그인에서 토큰을 다시 입력해 주세요.'
               }
             />
           ) : (
@@ -167,6 +168,49 @@ export default function AdminAnalytics() {
         </Panel>
       )}
 
+      {tab === 'feedback' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Panel
+            title="추천이 맞지 않은 이유"
+            subtitle="검색은 성공했지만 사용자가 쓰지 않기로 한 지점"
+          >
+            <BarList
+              items={stats.feedbackReasons}
+              emptyTitle="아직 접수된 피드백이 없습니다"
+              emptyDesc="결과 화면에서 사유를 한 번 누르면 여기에 쌓입니다."
+            />
+          </Panel>
+          <Panel title="원문과 함께 보기" subtitle="어떤 검색에서 나온 신호인가">
+            {stats.feedback.length === 0 ? (
+              <EmptyState
+                icon="thumb_down"
+                title={
+                  stats.detailAuthorized
+                    ? '아직 접수된 피드백이 없습니다'
+                    : '담당자 토큰이 있어야 열람할 수 있습니다'
+                }
+              />
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {stats.feedback.map((f, i) => (
+                  <li key={i} className="py-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded">
+                        {f.spaceId ? spaceName(f.spaceId) : '공간 미상'}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {new Date(f.ts).toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-800">{f.rawQuery}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+        </div>
+      )}
+
       {tab === 'interest' && (
         <Panel title="검색에서 후보로 제시된 공간" subtitle="성공 검색 기준 노출 횟수">
           <BarList
@@ -194,7 +238,7 @@ export default function AdminAnalytics() {
               desc={
                 stats.detailAuthorized
                   ? undefined
-                  : '응대 로그 화면에서 ADMIN_TOKEN을 입력해 주세요.'
+                  : '담당자 로그인에서 토큰을 다시 입력해 주세요.'
               }
             />
           ) : (

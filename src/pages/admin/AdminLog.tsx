@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import spacesData from '../../data/spaces.json';
 import { useStats, ADMIN_TOKEN_KEY } from '../../hooks/useStats';
 import { StorageBadge, EmptyState } from '../../components/AdminShared';
@@ -13,12 +14,12 @@ const spaceName = (id: string) => spacesData.spaces.find((s) => s.id === id)?.na
 
 export default function AdminLog() {
   const { stats, loading, error, reload } = useStats();
-  const [token, setToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY) || '');
   const [filter, setFilter] = useState<'all' | 'unmet' | 'success'>('all');
+  const navigate = useNavigate();
 
-  function saveToken() {
-    localStorage.setItem(ADMIN_TOKEN_KEY, token.trim());
-    reload();
+  function relogin() {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    navigate('/admin/login', { replace: true });
   }
 
   const rows = (stats?.recent || []).filter((r) =>
@@ -37,35 +38,27 @@ export default function AdminLog() {
         {stats && <StorageBadge persisted={stats.persisted} />}
       </div>
 
-      {/* 원문 조회 권한 */}
+      {/* 원문 조회 권한 — 화면 상태 6종 중 '권한 없음' */}
       {stats && !stats.detailAuthorized && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-600 mt-0.5">lock</span>
-            <div className="flex-1">
-              <p className="font-bold text-slate-800 text-sm mb-1">
-                원문 질의는 가려져 있습니다
-              </p>
-              <p className="text-[13px] text-slate-600 mb-3">
-                {stats.detailNotice ||
-                  '담당자 토큰이 확인되지 않아 원문 질의와 연락처는 내려받지 않았습니다.'}
-              </p>
-              <div className="flex gap-2 max-w-md">
-                <input
-                  type="password"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="ADMIN_TOKEN"
-                  className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                />
-                <button
-                  onClick={saveToken}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold"
-                >
-                  확인
-                </button>
-              </div>
-            </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-start gap-3">
+          <span className="material-symbols-outlined text-amber-600 mt-0.5" aria-hidden="true">
+            lock
+          </span>
+          <div className="flex-1">
+            <p className="font-bold text-slate-800 text-sm mb-1">원문 질의가 가려져 있습니다</p>
+            <p className="text-[13px] text-slate-600 mb-3">
+              {stats.tokenConfigured
+                ? '담당자 토큰이 확인되지 않았습니다. 다시 로그인해 주세요.'
+                : '서버에 ADMIN_TOKEN 이 설정되지 않아 원문 질의와 연락처는 아무에게도 내려가지 않습니다. 집계 수치만 열람할 수 있습니다.'}
+            </p>
+            {stats.tokenConfigured && (
+              <button
+                onClick={relogin}
+                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold"
+              >
+                다시 로그인
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -1,7 +1,21 @@
-import { Link, Outlet, useLocation } from 'react-router';
+import { Link, Outlet, useLocation, Navigate, useNavigate } from 'react-router';
+import { ADMIN_TOKEN_KEY } from '../hooks/useStats';
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // 화면 상태 6종 중 '권한 없음'. 로그인을 거치지 않았으면 담당자 화면을 열지 않는다.
+  // (localStorage 에 키 자체가 없을 때만 차단. 빈 문자열은 서버에 ADMIN_TOKEN 이
+  //  설정되지 않은 제한 모드로, 로그인을 거친 상태다.)
+  if (localStorage.getItem(ADMIN_TOKEN_KEY) === null) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  const logout = () => {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+    navigate('/admin/login', { replace: true });
+  };
 
   return (
     <div className="bg-slate-50 text-slate-900 flex overflow-hidden min-h-screen">
@@ -41,10 +55,10 @@ export default function AdminLayout() {
         </nav>
 
         <div className="mt-10 pt-4 border-t border-slate-200 flex flex-col gap-2">
-          <Link to="/" className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+          <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
             <span className="material-symbols-outlined text-[20px]">logout</span>
             <span className="text-sm font-semibold">로그아웃</span>
-          </Link>
+          </button>
         </div>
       </aside>
 

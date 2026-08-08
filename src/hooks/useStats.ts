@@ -44,9 +44,19 @@ export interface ReservationRow {
   status: string;
 }
 
+export interface FeedbackRow {
+  ts: string;
+  rawQuery: string;
+  spaceId: string | null;
+  reason: string;
+  note: string | null;
+}
+
 export interface Stats {
   persisted: boolean;
   detailAuthorized: boolean;
+  /** 서버에 ADMIN_TOKEN 이 설정돼 있는가 — 미설정이면 아무도 원문을 볼 수 없다 */
+  tokenConfigured: boolean;
   detailNotice: string | null;
   summary: {
     totalSearches: number;
@@ -57,14 +67,18 @@ export interface Stats {
     contactLeft: number;
     reservationCount: number;
     pendingReservations: number;
+    cancelledReservations: number;
+    feedbackCount: number;
     avgLatencyMs: number;
   };
   unmetTypes: Counted[];
   regions: Counted[];
+  feedbackReasons: Counted[];
   topShownSpaces: Counted[];
   recent: SearchLogRow[];
   demands: DemandRow[];
   reservations: ReservationRow[];
+  feedback: FeedbackRow[];
 }
 
 export const ADMIN_TOKEN_KEY = 'modi_admin_token';
