@@ -51,8 +51,17 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: '이용 인원을 입력해 주세요.' });
   }
 
-  // 수용 인원 초과는 접수 단계에서 거른다 — 담당자가 반려하러 들어오는 일을 줄인다
   const space: any = spacesData.spaces.find((s: any) => s.id === spaceId);
+
+  // 이용 조건이 확인되지 않은 공간은 온라인 접수를 열지 않는다.
+  // 절차를 모르는 채로 신청을 받으면 그 자체가 잘못된 안내가 된다.
+  if (space.reservation_method == null || space.capacity_max == null) {
+    return res.status(409).json({
+      error: `${space.name}은(는) ${space.owner_dept} 소관으로, 이용 조건과 신청 절차가 아직 확인되지 않아 온라인 신청을 받을 수 없습니다.`,
+    });
+  }
+
+  // 수용 인원 초과는 접수 단계에서 거른다 — 담당자가 반려하러 들어오는 일을 줄인다
   if (headcount > space.capacity_max) {
     return res.status(400).json({
       error: `${space.name}의 최대 수용 인원은 ${space.capacity_max}명입니다.`,
