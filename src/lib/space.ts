@@ -20,6 +20,8 @@ export function capacityLabel(s: Space): string {
 }
 
 export function feeLabel(s: Space): string {
+  const txt = (s as any).fee_text;
+  if (txt) return txt;                          // 계획서에 요금 서술이 있으면 그대로
   if (s.fee_per_hour != null) {
     return s.fee_per_hour === 0 ? '무료' : `${s.fee_per_hour.toLocaleString()}원/시간`;
   }

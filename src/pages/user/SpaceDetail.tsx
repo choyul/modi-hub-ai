@@ -146,6 +146,17 @@ export default function SpaceDetail() {
               </button>
             )}
 
+            {b.channel === 'self' && !canApply(space) && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                <p className="text-sm font-bold text-amber-900 mb-1">대관 신청을 곧 열 예정입니다</p>
+                <p className="text-[13px] text-amber-800">
+                  다목적 대관 공간입니다. 정원·대관료 등 이용 조건이 확정되면 이 화면에서
+                  온라인 신청이 열립니다. 급하신 경우 {(space as any).owner_dept ?? '조합 사무국'}으로
+                  문의해 주세요.
+                </p>
+              </div>
+            )}
+
             {b.channel === 'ota' && b.status === 'pending' && (
               <div className="rounded-xl border-2 border-indigo-100 bg-indigo-50/50 p-5">
                 <div className="flex items-center gap-2 mb-1.5">
@@ -209,8 +220,10 @@ export default function SpaceDetail() {
 
             {b.channel === 'phone' && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
-                <b>전화로 예약하는 공간입니다.</b>{' '}
-                {space.contact ?? `${(space as any).owner_dept ?? '소관 부서'}로 문의해 주세요.`}
+                <b>이용 안내</b>{' '}
+                {space.reservation_method ??
+                  space.contact ??
+                  `${(space as any).owner_dept ?? '소관 부서'}로 문의해 주세요.`}
               </div>
             )}
 
