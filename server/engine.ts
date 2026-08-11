@@ -15,6 +15,7 @@
  */
 import Fuse from 'fuse.js';
 import { cheapParse, HOME_REGION, type CheapParsed } from './parse.js';
+import { toJamo } from './hangul.js';
 import { getSpaces, type DbSpace } from './db.js';
 import { recommendSpaces, type RecommendResult } from './recommend.js';
 
@@ -75,30 +76,46 @@ function layerFilter(spaces: DbSpace[], p: CheapParsed): DbSpace[] | null {
   return cand.slice(0, 3);
 }
 
-// ── 계층 ② 퍼지 (Fuse.js) ───────────────────────────────────
-let fuseCache: { fuse: Fuse<DbSpace>; size: number } | null = null;
+// ── 계층 ② 퍼지 (Fuse.js + 한글 자모 분해) ──────────────────
+//
+// 한글은 완성형 그대로 비교하면 "숍"/"샵" 같은 한 획 차이가 문자 1개 차이로
+// 계산돼 오타를 놓친다. 자모로 풀어 비교하면 편집거리가 실제 체감과 맞는다.
+type FuzzyDoc = { s: DbSpace; nameJamo: string; textJamo: string };
+
+let fuseCache: { fuse: Fuse<FuzzyDoc>; size: number } | null = null;
+
 function getFuse(spaces: DbSpace[]) {
   if (fuseCache && fuseCache.size === spaces.length) return fuseCache.fuse;
-  const fuse = new Fuse(spaces, {
+  const docs: FuzzyDoc[] = spaces.map((s) => ({
+    s,
+    nameJamo: toJamo(s.name),
+    textJamo: toJamo(
+      [s.name, s.facility, s.specialty ?? '', ...(s.aliases ?? [])].join(' ')
+    ),
+  }));
+  const fuse = new Fuse(docs, {
     keys: [
-      { name: 'name', weight: 2 },
-      { name: 'search_text', weight: 1 },
-      { name: 'specialty', weight: 1.5 },
+      { name: 'nameJamo', weight: 3 },   // 공간명 직접 입력이 주 용도
+      { name: 'textJamo', weight: 1 },
     ],
     includeScore: true,
-    threshold: 0.34,          // 낮을수록 엄격. 오타 흡수 수준으로만
+    threshold: 0.32,        // 자모 기준이라 완성형보다 관대해도 오탐이 적다
+    distance: 200,          // 자모로 풀면 문자열이 3배 길어지므로 함께 늘린다
     ignoreLocation: true,
+    minMatchCharLength: 3,
   });
   fuseCache = { fuse, size: spaces.length };
   return fuse;
 }
 
 function layerFuzzy(spaces: DbSpace[], query: string): DbSpace[] {
+  const q = toJamo(query);
+  if (q.length < 4) return [];          // 너무 짧으면 오탐만 는다
   return getFuse(spaces)
-    .search(query)
-    .filter((r) => (r.score ?? 1) < 0.3)
+    .search(q)
+    .filter((r) => (r.score ?? 1) < 0.28)
     .slice(0, 3)
-    .map((r) => r.item)
+    .map((r) => r.item.s)
     .filter(bookable);
 }
 
