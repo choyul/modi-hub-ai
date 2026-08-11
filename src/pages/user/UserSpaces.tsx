@@ -1,19 +1,7 @@
-import { useSearchParams, useNavigate } from 'react-router';
+import { useSearchParams, useNavigate, Link } from 'react-router';
 import spacesData from '../../data/spaces.json';
-import { capacityLabel, feeLabel, isIncomplete, type Space } from '../../lib/space';
-
-export const getCategoryImageUrl = (category: string) => {
-  switch (category) {
-    case '회의·교육': return 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=400';
-    case '키친·조리': return 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400';
-    case '공방·체험': return 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=400';
-    case '전시·공연': return 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400';
-    case '숙박': return 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400';
-    case '카페·라운지': return 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400';
-    case '야외': return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400';
-    default: return 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400';
-  }
-};
+import { capacityLabel, feeLabel, isIncomplete, bookingOf, type Space } from '../../lib/space';
+import SpacePhoto from '../../components/SpacePhoto';
 
 export default function UserSpaces() {
   // 홈에서 /spaces?category=... 로 들어오는 경로를 받는다 (G10 대안 경로)
@@ -104,11 +92,14 @@ export default function UserSpaces() {
           {filteredSpaces.map(space => (
             <div key={space.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col">
               <div className="h-48 relative overflow-hidden bg-slate-100">
-                <img src={getCategoryImageUrl(space.category)} alt={space.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <SpacePhoto category={space.category} className="w-full h-full" />
                 <div className="absolute top-3 left-3 flex flex-col gap-1">
                   <span className="px-2 py-1 bg-black/60 text-white text-[10px] rounded font-medium backdrop-blur-sm shadow-sm">{space.facility}</span>
                   {isIncomplete(space as Space) && (
                     <span className="px-2 py-1 bg-amber-500/90 text-white text-[10px] rounded font-bold backdrop-blur-sm shadow-sm">정보 확인 필요</span>
+                  )}
+                  {bookingOf(space as Space).channel === 'ota' && (
+                    <span className="px-2 py-1 bg-indigo-600/90 text-white text-[10px] rounded font-bold backdrop-blur-sm shadow-sm">외부 예약</span>
                   )}
                 </div>
                 <div className="absolute bottom-3 right-3 text-white">
@@ -132,9 +123,12 @@ export default function UserSpaces() {
                       {feeLabel(space as Space)}
                     </div>
                   </div>
-                  <button className="w-full py-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl text-sm font-bold transition-colors">
+                  <Link
+                    to={`/spaces/${space.id}`}
+                    className="block text-center w-full py-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl text-sm font-bold transition-colors"
+                  >
                     상세보기
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -1,16 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import spacesData from '../../data/spaces.json';
-import { getCategoryImageUrl } from './UserSpaces';
+import SpacePhoto from '../../components/SpacePhoto';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   capacityLabel,
   feeLabel,
   leadDaysLabel,
   canApply,
+  bookingOf,
   findSpace,
   type Space as SpaceInfo,
 } from '../../lib/space';
+
+/** SR-10 — 어느 계층이 답했는지 사용자에게 그대로 보여준다 */
+const LAYER_LABEL: Record<string, string> = {
+  filter: '① 조건 필터로 찾음',
+  fuzzy: '② 유사어 검색으로 찾음',
+  embedding: '③ 의미 검색으로 찾음',
+  llm: '④ AI 생성으로 찾음',
+};
 
 
 /**
@@ -50,6 +59,9 @@ interface ApiResponse {
   followUps: string[];
   latencyMs: number;
   persisted: boolean;
+  answeredBy: 'filter' | 'fuzzy' | 'embedding' | 'llm';
+  llmCalled: boolean;
+  regionNotice: string | null;
 }
 
 // [원칙 2] 이유 설명 — 추천 근거를 데이터에서 구조화해 사용자가 스스로 검증하게 함
@@ -179,8 +191,17 @@ export default function UserSearch() {
           <div className="flex items-center gap-3 text-indigo-300 mb-4">
             <span className="material-symbols-outlined text-indigo-400">auto_awesome</span>
             <span className="font-semibold text-sm tracking-wide">
-              {loading ? 'AI가 조건을 분석하고 있어요…' : 'AI 분석 완료'}
+              {loading
+                ? '조건을 분석하고 있어요…'
+                : result
+                ? LAYER_LABEL[result.answeredBy] ?? '분석 완료'
+                : '분석 완료'}
             </span>
+            {!loading && result && !result.llmCalled && (
+              <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-300 text-[11px] font-bold">
+                생성형 AI 호출 0회
+              </span>
+            )}
           </div>
           <h1 className="text-3xl font-bold leading-relaxed tracking-tight">"{query}"</h1>
 
@@ -242,6 +263,13 @@ export default function UserSearch() {
                 전체 공간 둘러보기
               </button>
             </div>
+          </div>
+        )}
+
+        {result && !loading && !error && result.regionNotice && (
+          <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-[13px] text-indigo-900 flex items-start gap-2">
+            <span className="material-symbols-outlined text-[17px] mt-0.5 text-indigo-500" aria-hidden="true">map</span>
+            <span>{result.regionNotice}</span>
           </div>
         )}
 
@@ -479,11 +507,7 @@ export default function UserSearch() {
 
                       <div className="md:flex">
                         <div className="md:w-1/3 bg-slate-200 h-48 md:h-auto relative overflow-hidden flex items-center justify-center">
-                          <img
-                            src={getCategoryImageUrl(spaceInfo.category)}
-                            alt={spaceInfo.name}
-                            className="w-full h-full object-cover"
-                          />
+                          <SpacePhoto category={spaceInfo.category} className="w-full h-full" />
                           <div className="absolute bottom-2 left-2 flex gap-1">
                             <span className="px-2 py-0.5 bg-black/50 text-white text-[10px] rounded backdrop-blur-sm">
                               {spaceInfo.facility}
@@ -566,32 +590,51 @@ export default function UserSearch() {
                               </span>
                               <span>④ 예약 확정</span>
                             </div>
-                            {canApply(spaceInfo) ? (
-                              <button
-                                onClick={() => {
-                                  if (!isLoggedIn) {
-                                    navigate('/login');
-                                  } else {
-                                    navigate(`/reservations?apply=${spaceInfo.id}`);
-                                  }
-                                }}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
-                              >
-                                예약 신청하기
-                                <span className="font-normal text-indigo-200 ml-1 text-xs">
-                                  (담당자 승인 후 확정)
-                                </span>
-                              </button>
-                            ) : (
-                              // 신청 절차가 확인되지 않은 공간에 온라인 접수를 열면 거짓말이 된다
-                              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-800">
-                                <b>온라인 신청을 아직 열 수 없는 공간입니다.</b>
-                                <div className="mt-0.5 text-amber-700">
-                                  {(spaceInfo as any).owner_dept} 소관으로, 이용 조건과 신청 절차가
-                                  확인되지 않았습니다. 확인되는 대로 신청 버튼이 열립니다.
+                            {(() => {
+                              // BK-08 예약 채널 분기 — 채널마다 정직한 버튼을 단다
+                              const bk = bookingOf(spaceInfo);
+                              if (canApply(spaceInfo)) {
+                                return (
+                                  <button
+                                    onClick={() => {
+                                      if (!isLoggedIn) navigate('/login');
+                                      else navigate(`/reservations?apply=${spaceInfo.id}`);
+                                    }}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
+                                  >
+                                    예약 신청하기
+                                    <span className="font-normal text-indigo-200 ml-1 text-xs">
+                                      (담당자 승인 후 확정)
+                                    </span>
+                                  </button>
+                                );
+                              }
+                              if (bk.channel === 'ota') {
+                                return (
+                                  <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-[12.5px] text-indigo-900">
+                                    <b>외부 예약 공간입니다.</b>{' '}
+                                    {bk.status === 'pending'
+                                      ? `개관(${bk.openFrom ?? '일정 확정 전'}) 후 ${bk.plannedChannels.join('·')}에서 예약하실 수 있어요.`
+                                      : '예약 사이트에서 진행해 주세요.'}
+                                    <button
+                                      onClick={() => navigate(`/spaces/${spaceInfo.id}`)}
+                                      className="mt-1.5 block font-bold text-indigo-600 hover:underline"
+                                    >
+                                      {bk.status === 'pending' ? '개관 알림 받기 →' : '예약 채널 보기 →'}
+                                    </button>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-800">
+                                  <b>온라인 신청을 아직 열 수 없는 공간입니다.</b>
+                                  <div className="mt-0.5 text-amber-700">
+                                    {(spaceInfo as any).owner_dept} 소관으로, 이용 조건과 신청 절차가
+                                    확인되지 않았습니다. 확인되는 대로 신청 버튼이 열립니다.
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -615,11 +658,7 @@ export default function UserSearch() {
                             className="relative border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group hover:border-indigo-200 hover:shadow-md transition-all"
                           >
                             <div className="h-36 relative overflow-hidden bg-slate-100">
-                              <img
-                                src={getCategoryImageUrl(spaceInfo.category)}
-                                alt={spaceInfo.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
+                              <SpacePhoto category={spaceInfo.category} className="w-full h-full" />
                               <div className="absolute top-2 right-2 bg-white/90 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">
                                 추천 {idx + 2}순위
                               </div>

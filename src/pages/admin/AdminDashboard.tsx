@@ -121,7 +121,7 @@ export default function AdminDashboard() {
           label="대관 신청"
           value={s.reservationCount}
           unit="건"
-          note={`승인대기 ${s.pendingReservations}건`}
+          note={`승인대기 ${s.pendingReservations}건 · 개관 대기자 ${s.notifyWaiters}명`}
           tone="dark"
         />
       </div>
@@ -177,7 +177,19 @@ export default function AdminDashboard() {
           />
         </Panel>
 
-        <Panel title="응답 성능" subtitle="검색 1건당 AI 응답까지 걸린 시간">
+        <Panel
+          title="어느 계층이 답했나 (단계적 축퇴 실측)"
+          subtitle={`검색 ${s.totalSearches}건 중 ${s.noLlmCount}건(${s.noLlmRate}%)을 생성형 AI 없이 응답 — 비용 구조의 증거`}
+          accent="emerald"
+        >
+          <BarList
+            items={stats.answeredBy}
+            emptyTitle="아직 검색 기록이 없습니다"
+            emptyDesc="검색이 발생하면 계층별 응답 분포가 여기 쌓입니다."
+          />
+        </Panel>
+
+        <Panel title="응답 성능" subtitle="검색 1건당 응답까지 걸린 시간">
           {s.totalSearches === 0 ? (
             <EmptyState icon="speed" title="측정된 검색이 없습니다" />
           ) : (

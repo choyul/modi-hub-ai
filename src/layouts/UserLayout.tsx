@@ -2,10 +2,24 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+/**
+ * 주민 화면 공통 레이아웃.
+ * - PL-12: 좁은 화면에서 내비가 통째로 사라지던 결함 → 햄버거 메뉴
+ * - PL-09: 푸터의 허위 상태 표시("Gemini 1.5 Flash Connected") 제거
+ */
+
+const NAV = [
+  { to: '/', label: '홈' },
+  { to: '/spaces', label: '공간안내' },
+  { to: '/filter', label: '조건조회' },
+  { to: '/reservations', label: '예약현황' },
+];
+
 export default function UserLayout() {
   const location = useLocation();
   const { isLoggedIn, userName, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -15,80 +29,81 @@ export default function UserLayout() {
         setIsDropdownOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  // 경로가 바뀌면 모바일 메뉴를 닫는다
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  const handleLogout = async () => {
+    await logout();
     setIsDropdownOpen(false);
     navigate('/');
   };
 
   return (
     <div className="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
-      <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex justify-between items-center transition-all h-20">
-        <div className="flex justify-between items-center w-full max-w-7xl mx-auto">
+      <header className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-4 h-20">
+        <div className="flex justify-between items-center w-full max-w-7xl mx-auto h-full">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">M</div>
             <div>
-              <h1 className="text-lg font-bold leading-none text-slate-800">MODI Hub AI</h1>
-              <p className="text-xs text-slate-500 uppercase tracking-widest mt-0.5">Bonghwa Urban Regeneration</p>
+              <h1 className="text-lg font-bold leading-none text-slate-800">MODI Hub</h1>
+              <p className="text-xs text-slate-500 uppercase tracking-widest mt-0.5">봉화군 공간찾기</p>
             </div>
           </Link>
-          <div className="flex items-center gap-8">
+
+          <div className="flex items-center gap-4 md:gap-8">
             <nav className="hidden md:flex gap-6 items-center text-sm font-medium text-slate-600">
-              <Link to="/" className={`${location.pathname === '/' ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}`}>홈</Link>
-              <Link to="/spaces" className={`${location.pathname === '/spaces' ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}`}>공간안내</Link>
-              <Link to="/reservations" className={`${location.pathname === '/reservations' ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}`}>예약현황</Link>
+              {NAV.map((n) => (
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  className={location.pathname === n.to ? 'text-indigo-600' : 'hover:text-indigo-600 transition-colors'}
+                >
+                  {n.label}
+                </Link>
+              ))}
               <Link to="/admin/login" className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-800 transition-colors text-xs font-bold text-slate-500">
-                <span className="material-symbols-outlined text-[14px] pt-0.5">lock</span>
-                관리자
+                <span className="material-symbols-outlined text-[14px] pt-0.5" aria-hidden="true">lock</span>
+                담당자
               </Link>
             </nav>
-            <div className="flex items-center gap-3">
+
+            <div className="hidden md:flex items-center gap-3">
               {!isLoggedIn ? (
-                <>
-                  <Link to="/login" className="px-5 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors">
-                    로그인
-                  </Link>
-                  <Link to="/login" className="px-5 py-2 text-sm font-bold text-white bg-emerald-500 rounded-full hover:bg-emerald-600 shadow-sm transition-colors">
-                    회원가입
-                  </Link>
-                </>
+                <Link to="/login" className="px-5 py-2 text-sm font-bold text-white bg-indigo-600 rounded-full hover:bg-indigo-700 shadow-sm transition-colors">
+                  로그인
+                </Link>
               ) : (
                 <div className="relative" ref={dropdownRef}>
-                  <button 
+                  <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 hover:bg-slate-100 p-1 pr-3 rounded-full border border-slate-200 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black">
-                      {userName?.charAt(0) || '👤'}
+                      {userName?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     <span className="text-sm font-bold text-slate-800">{userName}님</span>
-                    <span className="material-symbols-outlined text-[18px] text-slate-400 group-hover:text-slate-600 transition-colors">
+                    <span className="material-symbols-outlined text-[18px] text-slate-400 group-hover:text-slate-600" aria-hidden="true">
                       expand_more
                     </span>
                   </button>
 
                   {isDropdownOpen && (
                     <div className="absolute right-0 top-11 mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-[100] overflow-hidden">
-                      <Link 
-                        to="/reservations" 
-                        className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 font-medium transition-colors"
+                      <Link
+                        to="/reservations"
+                        className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 font-medium"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        내 예약 현황
+                        내 신청 현황
                       </Link>
-                      <button 
-                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition-colors"
-                      >
-                        프로필 설정
-                      </button>
                       <div className="border-t border-slate-100 my-1"></div>
-                      <button 
+                      <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-bold transition-colors"
+                        className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-bold"
                       >
                         로그아웃
                       </button>
@@ -97,27 +112,62 @@ export default function UserLayout() {
                 </div>
               )}
             </div>
+
+            {/* PL-12: 모바일 햄버거 — 대표 사용자가 현장에서 폰으로 쓰는 대리검색자다 */}
+            <button
+              className="md:hidden p-2 -mr-2 text-slate-700"
+              aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              <span className="material-symbols-outlined text-[26px]" aria-hidden="true">
+                {mobileOpen ? 'close' : 'menu'}
+              </span>
+            </button>
           </div>
         </div>
+
+        {mobileOpen && (
+          <nav className="md:hidden absolute left-0 right-0 top-20 bg-white border-b border-slate-200 shadow-lg px-4 py-3 space-y-1">
+            {NAV.map((n) => (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={`block px-3 py-3 rounded-lg text-[15px] font-bold ${
+                  location.pathname === n.to ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {n.label}
+              </Link>
+            ))}
+            <div className="border-t border-slate-100 pt-2 mt-2 flex items-center justify-between px-3 pb-1">
+              {!isLoggedIn ? (
+                <Link to="/login" className="text-[15px] font-bold text-indigo-600">로그인</Link>
+              ) : (
+                <>
+                  <span className="text-sm font-bold text-slate-700">{userName}님</span>
+                  <button onClick={handleLogout} className="text-sm font-bold text-red-600">로그아웃</button>
+                </>
+              )}
+              <Link to="/admin/login" className="text-xs font-bold text-slate-400">담당자</Link>
+            </div>
+          </nav>
+        )}
       </header>
-      
+
       <main className="flex-1 pt-20 flex flex-col">
         <Outlet />
       </main>
-      
-      <footer className="bg-slate-100 border-t border-slate-200 px-6 py-2 flex justify-between items-center text-[10px] text-slate-400 font-medium">
-        <div className="flex gap-4 max-w-7xl mx-auto w-full justify-between items-center">
-          <div className="flex gap-4">
-            <span>BONGHWA URBAN REGENERATION PROJECT © 2024</span>
-            <span className="hidden sm:inline">봉화군 도시재생 지원센터</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Gemini 1.5 Flash Connected</span>
-          </div>
+
+      {/* PL-09: 확인하지 않은 상태를 표시하지 않는다 */}
+      <footer className="bg-slate-100 border-t border-slate-200 px-6 py-3 text-[11px] text-slate-400 font-medium">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 max-w-7xl mx-auto w-full justify-between items-center">
+          <span>봉화군 도시계획과 도시재생팀 · 시범 서비스 © 2026</span>
+          <Link to="/privacy" className="hover:text-slate-600 underline underline-offset-2">
+            개인정보 처리 안내
+          </Link>
         </div>
       </footer>
     </div>
   );
 }
-

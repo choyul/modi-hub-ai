@@ -24,6 +24,7 @@ export interface SearchLogRow {
   shownSpaceIds: string[];
   unmetType: string | null;
   latencyMs: number;
+  answeredBy?: string | null;
 }
 
 export interface DemandRow {
@@ -70,11 +71,17 @@ export interface Stats {
     cancelledReservations: number;
     feedbackCount: number;
     avgLatencyMs: number;
+    noLlmCount: number;
+    noLlmRate: number;
+    notifyWaiters: number;
   };
   unmetTypes: Counted[];
   regions: Counted[];
   feedbackReasons: Counted[];
   topShownSpaces: Counted[];
+  answeredBy: Counted[];
+  notifyWaitersBySpace: Counted[];
+  notifyRequests: { ts: string; spaceName: string; contact: string; notified: boolean }[];
   recent: SearchLogRow[];
   demands: DemandRow[];
   reservations: ReservationRow[];

@@ -1,11 +1,8 @@
 /**
- * POST /api/demand  { rawQuery, unmetType, contact?, note? }
- *
- * 실패 3겹 응답 ②③ — 사용자가 "이 수요를 봉화군에 전달할까요?"에 직접 동의했을 때만 호출된다.
- * 몰래 수집하는 로그가 아니라, 사용자가 자기 수요를 행정에 등록하는 경로다.
- * 연락처는 선택 입력이며, 입력하지 않아도 수요 등록 자체는 성립한다.
+ * POST /api/demand — 동의 기반 수요 등록 (UD-02·03)
+ * 사용자가 "봉화군에 전달할까요?"에 직접 동의했을 때만 호출된다.
  */
-import { appendDemand, isPersistent } from '../server/store';
+import { appendDemand, isPersistent } from '../server/db';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -14,9 +11,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const rawQuery = String(req.body?.rawQuery || '').trim();
-  if (!rawQuery) {
-    return res.status(400).json({ error: '등록할 수요 내용이 없습니다.' });
-  }
+  if (!rawQuery) return res.status(400).json({ error: '등록할 수요 내용이 없습니다.' });
 
   const contact = String(req.body?.contact || '').trim();
   if (contact && contact.length > 60) {
@@ -25,10 +20,8 @@ export default async function handler(req: any, res: any) {
 
   try {
     await appendDemand({
-      ts: new Date().toISOString(),
       rawQuery,
       unmetType: req.body?.unmetType ?? null,
-      consented: true,
       contact: contact || null,
       note: String(req.body?.note || '').trim().slice(0, 500) || null,
     });

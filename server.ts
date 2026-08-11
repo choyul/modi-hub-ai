@@ -15,8 +15,9 @@ import demandHandler from './api/demand';
 import statsHandler from './api/stats';
 import reservationHandler from './api/reservation';
 import feedbackHandler from './api/feedback';
+import notifyHandler from './api/notify';
 
-dotenv.config();
+dotenv.config({ path: ['.env.local', '.env'] });
 
 async function startServer() {
   const app = express();
@@ -31,6 +32,7 @@ async function startServer() {
   app.get('/api/reservation', (req, res) => reservationHandler(req, res));
   app.delete('/api/reservation', (req, res) => reservationHandler(req, res));
   app.post('/api/feedback', (req, res) => feedbackHandler(req, res));
+  app.post('/api/notify', (req, res) => notifyHandler(req, res));
 
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

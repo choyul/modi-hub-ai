@@ -26,7 +26,7 @@ interface Reservation {
 const findSpace = (id: string) => spacesData.spaces.find((s) => s.id === id);
 
 export default function UserReservations() {
-  const { isLoggedIn, userName } = useAuth();
+  const { isLoggedIn, userName, accessToken } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const applyId = searchParams.get('apply');
@@ -47,10 +47,12 @@ export default function UserReservations() {
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
 
   async function load() {
-    if (!userName) return;
+    if (!accessToken) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/reservation?applicant=${encodeURIComponent(userName)}`);
+      const res = await fetch('/api/reservation', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       const data = await res.json();
       setList(data.reservations || []);
       setPersisted(data.persisted !== false);
@@ -64,7 +66,7 @@ export default function UserReservations() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userName]);
+  }, [accessToken]);
 
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
@@ -81,7 +83,10 @@ export default function UserReservations() {
     try {
       const res = await fetch('/api/reservation', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           spaceId: applySpace.id,
           applicant: userName,
@@ -108,8 +113,11 @@ export default function UserReservations() {
     try {
       const res = await fetch('/api/reservation', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, applicant: userName }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || '취소에 실패했습니다.');
