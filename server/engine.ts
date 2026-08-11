@@ -14,9 +14,9 @@
  * 비용 0·외부 호출 0 이라는 결정의 본질은 동일하다.
  */
 import Fuse from 'fuse.js';
-import { cheapParse, HOME_REGION, type CheapParsed } from './parse';
-import { getSpaces, type DbSpace } from './db';
-import { recommendSpaces, type RecommendResult } from './recommend';
+import { cheapParse, HOME_REGION, type CheapParsed } from './parse.js';
+import { getSpaces, type DbSpace } from './db.js';
+import { recommendSpaces, type RecommendResult } from './recommend.js';
 
 export type AnsweredBy = 'filter' | 'fuzzy' | 'embedding' | 'llm';
 

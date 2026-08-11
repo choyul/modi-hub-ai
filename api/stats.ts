@@ -2,8 +2,8 @@
  * GET /api/stats — 담당자 화면 단일 데이터원. Supabase 에서 그 자리에서 집계한다.
  * 원문 질의·연락처는 x-admin-token 이 맞을 때만 내려간다 (LG-06).
  */
-import { supabaseAdmin } from '../server/supabase';
-import { getSpaces, isPersistent } from '../server/db';
+import { supabaseAdmin } from '../server/supabase.js';
+import { getSpaces, isPersistent } from '../server/db.js';
 
 const REASON_LABEL: Record<string, string> = {
   far: '너무 멀어요', time: '시간이 안 맞아요', cost: '비용이 부담돼요',

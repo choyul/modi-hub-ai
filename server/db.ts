@@ -2,7 +2,7 @@
  * Supabase 저장 계층 (서버 전용) — SB-06
  * store.ts(Upstash/메모리)를 대체한다. 원문은 반드시 scrub 을 거쳐 적재한다.
  */
-import { supabaseAdmin } from './supabase';
+import { supabaseAdmin } from './supabase.js';
 
 export const isPersistent = Boolean(
   process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY

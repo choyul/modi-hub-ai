@@ -13,7 +13,7 @@
 import {
   getSpaces, insertReservation, listReservations, cancelReservation,
   userFromToken, isPersistent,
-} from '../server/db';
+} from '../server/db.js';
 
 function reservationId(now: Date) {
   const d = now.toISOString().slice(2, 10).replace(/-/g, '');

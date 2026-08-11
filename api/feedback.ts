@@ -1,7 +1,7 @@
 /**
  * POST /api/feedback — 이탈 사유(UD-05) + 정보 오류 신고(PL-14, reason='report')
  */
-import { appendFeedback, isPersistent } from '../server/db';
+import { appendFeedback, isPersistent } from '../server/db.js';
 
 const REASONS = ['far', 'time', 'cost', 'type', 'other', 'report'];
 

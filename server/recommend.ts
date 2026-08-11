@@ -8,7 +8,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
-import spacesData from '../src/data/spaces.json';
+import { getSpaces } from './db.js';
 
 export interface ParsedQuery {
   /** 무엇을 하려는가 — 김장, 워크숍, 전시 등 */
@@ -49,8 +49,8 @@ export interface RecommendResult {
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 /** LLM에 넘길 최소 필드만 추린다 (토큰 절약 + 불필요한 정보 노출 방지) */
-function lightweightSpaces() {
-  return spacesData.spaces.map((s: any) => ({
+function lightweightSpaces(spaces: any[]) {
+  return spaces.map((s: any) => ({
     id: s.id,
     sigungu: s.sigungu ?? '봉화군',
     facility: s.facility,
@@ -93,11 +93,11 @@ const SYSTEM_RULES = `당신은 경북 봉화군 MODI Hub 공간 안내 담당�
   용도가 맞으면 추천하되, reasoning 첫 문장에 반드시 "이용 조건이 아직 확인되지 않은 공간입니다"를
   넣고 matchScore 를 70 이하로 둡니다. 확인되지 않은 수치를 지어내지 마십시오.`;
 
-function buildPrompt(query: string) {
+function buildPrompt(query: string, spaces: any[]) {
   return `${SYSTEM_RULES}
 
 공간 데이터:
-${JSON.stringify(lightweightSpaces(), null, 1)}
+${JSON.stringify(lightweightSpaces(spaces), null, 1)}
 
 사용자 요청 원문: "${query}"
 
@@ -111,10 +111,8 @@ ${JSON.stringify(lightweightSpaces(), null, 1)}
 }`;
 }
 
-const VALID_IDS = new Set(spacesData.spaces.map((s: any) => s.id));
-
 /** 모델이 없는 id를 지어내는 경우를 걸러낸다 */
-function sanitize(raw: any): RecommendResult {
+function sanitize(raw: any, VALID_IDS: Set<string>): RecommendResult {
   const matched = Array.isArray(raw?.matched)
     ? raw.matched.filter((m: any) => VALID_IDS.has(m?.id)).slice(0, 3)
     : [];
@@ -140,6 +138,8 @@ function sanitize(raw: any): RecommendResult {
 }
 
 export async function recommendSpaces(query: string): Promise<RecommendResult> {
+  const spaces = await getSpaces();
+  const VALID_IDS = new Set(spaces.map((s: any) => s.id));
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY가 서버에 설정되어 있지 않습니다.');
@@ -148,9 +148,9 @@ export async function recommendSpaces(query: string): Promise<RecommendResult> {
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.generateContent({
     model: MODEL,
-    contents: buildPrompt(query),
+    contents: buildPrompt(query, spaces),
     config: { responseMimeType: 'application/json', temperature: 0.2 },
   });
 
-  return sanitize(JSON.parse(response.text || '{}'));
+  return sanitize(JSON.parse(response.text || '{}'), VALID_IDS);
 }

@@ -5,8 +5,8 @@
  * NF-05: 인스턴스 메모리에서 IP당 분당 호출을 제한한다.
  *        IP는 카운트에만 쓰고 저장하지 않는다 (LG-03 유지).
  */
-import { searchSpaces } from '../server/engine';
-import { appendSearchLog, isPersistent } from '../server/db';
+import { searchSpaces } from '../server/engine.js';
+import { appendSearchLog, isPersistent } from '../server/db.js';
 
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 20;
