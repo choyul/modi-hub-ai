@@ -52,13 +52,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error ? toKorean(error.message) : null;
   };
 
+  /**
+   * 가입은 서버(/api/signup)를 거친다.
+   *
+   * 브라우저에서 supabase.auth.signUp 을 직접 부르면 「이메일 확인」 설정에 걸려
+   * 계정은 만들어지지만 로그인이 막힌다. 무료 프로젝트는 확인 메일이 사실상
+   * 발송되지 않으므로, 가입 버튼은 있는데 아무도 끝내지 못하는 상태가 된다.
+   * 서버에서 확인 처리까지 마친 뒤 곧바로 로그인시킨다.
+   */
   const signUp = async (email: string, password: string) => {
     if (!supabase) return '로그인 서비스가 설정되지 않았습니다.';
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return toKorean(error.message);
-    // 이메일 확인이 꺼져 있으면 세션이 바로 생긴다. 켜져 있으면 안내가 필요하다.
-    if (!data.session) return '확인 메일을 보냈습니다. 메일함에서 인증 후 로그인해 주세요.';
-    return null;
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return body?.error ?? '가입에 실패했습니다.';
+    } catch {
+      return '가입 요청을 보내지 못했습니다. 네트워크를 확인해 주세요.';
+    }
+    // 가입 직후 바로 로그인 — 사용자가 같은 정보를 두 번 입력하지 않게 한다
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return error ? toKorean(error.message) : null;
   };
 
   const logout = async () => {

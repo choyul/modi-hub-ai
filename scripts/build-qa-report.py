@@ -20,6 +20,12 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else "QA_테스트_결과보고서.xlsx"
 DATA = json.load(open("qa-results.json", encoding="utf-8"))
 cases, S = DATA["cases"], DATA["summary"]
 
+# '막혀야 정상인' 케이스 — 되는 것만 확인한 테스트는 통과가 아니다.
+import re as _re
+BLOCKED = [c for c in cases if _re.search(
+    r'40[0-9]|차단|거절|비공개|불가|수정할 수 없|볼 수 없|받지 않|추천하지 않|없다고',
+    c["expected"] + c["title"])]
+
 # ── 서식 팔레트 (봉화 산림 톤과 통일) ──────────────────────
 INK, PINE, PAPER = "18201B", "1F5D46", "F7F8F5"
 CLAY, OCHRE, GRAY = "A8452F", "8A6115", "6B7280"
@@ -140,8 +146,9 @@ r += 1
 verdict = (
     f'전 {S["total"]}건 통과 (통과율 100%). 1차 실행에서 3건이 실패하여 원인을 규명한 뒤 '
     "2건은 테스트 방법을 수정하고 1건은 제약사항으로 기록했다. 상세는 ⑤결함·제약 시트 참조. "
-    "권한 경계(로그인 없이 조회 차단·타인 신청 취소 차단·토큰 없이 원문 비공개)와 "
-    "예약 채널 가드(외부예약·미확인 공간 차단) 등 '막혀야 정상인' 케이스를 전체의 30%(14건)로 편성하여, "
+    "권한 경계(로그인 없이 조회 차단·타인 신청 취소 차단·토큰 없이 원문 비공개), "
+    "예약 채널 가드(외부예약·미확인 공간 차단), 편집 권한(무인증 401·화이트리스트 밖 필드 거절) 등 "
+    f"'막혀야 정상인' 케이스를 전체의 {round(len(BLOCKED) / len(cases) * 100)}%({len(BLOCKED)}건)로 편성하여, "
     "동작 확인뿐 아니라 차단 확인까지 마쳤다."
 )
 c = ws.cell(row=r, column=1, value=verdict)
@@ -187,7 +194,7 @@ personas = [
      "키가 브라우저로 새지 않는가. 공개키로 로그를 못 읽는가."),
     ("—", "미인증 외부인 / 제3자 계정", "(공격 관점)", "없음 · 타인 토큰", "-",
      "권한 없이 남의 데이터를 보거나 지우려 시도한다.",
-     "차단되는가. 이 관점의 케이스가 전체의 30%."),
+     f"차단되는가. '막혀야 정상인' 케이스가 전체의 {round(len(BLOCKED) / len(cases) * 100)}%."),
 ]
 for i, p in enumerate(personas):
     r = 5 + i
@@ -258,7 +265,7 @@ for fid in sorted(cov):
     r += 1
 
 r += 1
-ws.cell(row=r, column=1, value="■ 자동화 테스트로 검증하지 않은 항목 (사유 명시)").font = Font(
+ws.cell(row=r, column=1, value="■ 자동화 테스트로 검증하지 않은 항목 · 폐기 항목 (사유 명시)").font = Font(
     name=F, size=11, bold=True, color=OCHRE)
 r += 1
 uncovered = [
@@ -270,8 +277,8 @@ uncovered = [
      "담당자가 취할 행동이 없어 기능 자체를 폐기 (기능정의서 ✖ 표기)"),
     ("SP-08", "인접 시군 확장", "-", "폐기",
      "데이터 미보유. SR-11 정직 안내로 대체"),
-    ("QA-01", "평가셋 20건 정확도", "-", "미구현",
-     "무LLM 92%의 '정확도 손해'를 정량화하는 항목. 후속 과제로 남김"),
+    ("AD-11", "담당자 공간 편집", "TC-041~048", "API 실호출",
+     "구현 완료. 무인증 401·저장·교차검증·화이트리스트·빈값 null·재색인까지 8건 검증"),
 ]
 for u in uncovered:
     for col, v in enumerate(u, start=1):

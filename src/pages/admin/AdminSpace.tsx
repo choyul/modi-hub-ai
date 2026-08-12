@@ -146,7 +146,7 @@ export default function AdminSpace() {
               <th className="px-4 py-3 text-left font-bold">수용인원</th>
               <th className="px-4 py-3 text-left font-bold">예약 채널</th>
               <th className="px-4 py-3 text-left font-bold">누락 필드</th>
-              <th className="px-4 py-3 text-right font-bold">편집</th>
+              <th className="px-4 py-3 text-right font-bold whitespace-nowrap">편집</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -185,10 +185,10 @@ export default function AdminSpace() {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     <button
                       onClick={() => setEditing(s)}
-                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold"
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold whitespace-nowrap"
                     >
                       수정
                     </button>
@@ -276,9 +276,9 @@ function EditPanel({ space, onClose, onSaved }: {
   );
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 z-50 flex items-start justify-center overflow-y-auto p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl my-8">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+    <div className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[92vh] flex flex-col">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div>
             <h2 className="font-bold text-slate-900">{space.name} 수정</h2>
             <p className="text-xs text-slate-500">{space.id} · {space.facility}</p>
@@ -286,7 +286,7 @@ function EditPanel({ space, onClose, onSaved }: {
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-sm font-bold">닫기</button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto grow">
           <p className="text-[13px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-600">
             <b className="text-slate-800">비우면 「확인 필요」로 저장됩니다.</b> 확인하지 못한 값을
             짐작으로 채우지 마세요 — 이용자가 그 값을 믿고 헛걸음합니다.
@@ -387,7 +387,7 @@ function EditPanel({ space, onClose, onSaved }: {
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-200 flex gap-2 justify-end sticky bottom-0 bg-white rounded-b-2xl">
+        <div className="px-6 py-4 border-t border-slate-200 flex gap-2 justify-end shrink-0 bg-white rounded-b-2xl">
           <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600">취소</button>
           <button onClick={save} disabled={saving}
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold">

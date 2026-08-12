@@ -212,11 +212,38 @@ const pw = 'qa-test-password-1';
 let token = null, authH = {};
 
 {
-  const { error } = await admin.auth.admin.createUser({ email, password: pw, email_confirm: true });
+  // 화면의 '회원가입'과 같은 경로로 만든다 — 담당자 대행이 아니라 주민 스스로
+  const { status, body } = await api('/api/signup', {
+    method: 'POST', body: JSON.stringify({ email, password: pw }) });
   T({ persona: 'P2 이수진(34·워킹맘)', role: 'U', feature: 'AU-01', area: '인증',
-      title: '이메일로 계정을 만든다 (실계정)',
-      pre: '없음', input: email,
-      expected: '계정 생성 성공' }, !error, error?.message ?? email);
+      title: '주민이 스스로 계정을 만든다 (확인 메일 없이 바로 사용)',
+      pre: '로그인 없음', input: email,
+      expected: '200 · 곧바로 로그인 가능한 상태' }, status === 200,
+    `HTTP ${status} ${body?.error ?? email}`);
+}
+{
+  const { status, body } = await api('/api/signup', {
+    method: 'POST', body: JSON.stringify({ email, password: pw }) });
+  T({ persona: 'P2 이수진(34·워킹맘)', role: 'U', feature: 'AU-01', area: '입력검증',
+      title: '같은 이메일로 두 번 가입되지 않는다',
+      pre: '이미 가입됨', input: '동일 이메일',
+      expected: '409 + 로그인 안내' }, status === 409, `HTTP ${status} · ${body?.error}`);
+}
+{
+  const { status, body } = await api('/api/signup', {
+    method: 'POST', body: JSON.stringify({ email: `short-${Date.now()}@test.modi`, password: '123' }) });
+  T({ persona: 'P3 박준호(29·모바일)', role: 'U', feature: 'AU-01', area: '입력검증',
+      title: '너무 짧은 비밀번호는 거절한다',
+      pre: '없음', input: '비밀번호 3자',
+      expected: '400 + 기준 안내' }, status === 400, `HTTP ${status} · ${body?.error}`);
+}
+{
+  const { status, body } = await api('/api/signup', {
+    method: 'POST', body: JSON.stringify({ email: 'not-an-email', password: 'abcdef123' }) });
+  T({ persona: 'P3 박준호(29·모바일)', role: 'U', feature: 'AU-01', area: '입력검증',
+      title: '이메일 형식이 아니면 거절한다',
+      pre: '없음', input: '"not-an-email"',
+      expected: '400' }, status === 400, `HTTP ${status} · ${body?.error}`);
 }
 {
   const { data, error } = await anon.auth.signInWithPassword({ email, password: pw });
