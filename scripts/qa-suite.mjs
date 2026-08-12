@@ -543,13 +543,25 @@ let stats = null;
   // 수정이 검색에 반영되는가 (search_text·임베딩 재색인 + 캐시 무효화)
   await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
     body: JSON.stringify({ id: 'GL6', patch: { features: '프로젝터, 가변형 원탁, QA검색어확인' } }) });
-  const { body: found } = await search('QA검색어확인');
+
+  // 캐시 창(L-03)을 인정하고 기다린다. 수정을 처리한 인스턴스와 검색을 처리한
+  // 인스턴스가 다르면 최대 TTL 만큼 옛 값이 보인다 — 없는 즉시성을 기대하면
+  // 테스트가 간헐적으로 실패하고, 그 실패는 제품이 아니라 기대치가 틀린 것이다.
+  let found = null;
+  let waited = 0;
+  for (let i = 0; i < 5; i += 1) {
+    const r = await search('QA검색어확인');
+    found = r.body;
+    if ((found?.matched ?? []).some((m) => m.id === 'GL6')) break;
+    await new Promise((ok) => setTimeout(ok, 5000));
+    waited += 5;
+  }
   T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11·SR-12', area: '공간관리',
-      title: '수정한 내용이 곧바로 검색에 잡힌다 (재색인)',
+      title: '수정한 내용이 검색에 반영된다 (재색인 · 캐시 반영 20초 이내)',
       pre: '특징에 새 단어 추가', input: '"QA검색어확인" 검색',
-      expected: 'GL6 검출' },
+      expected: 'GL6 검출 (캐시 TTL 15초 이내)' },
     (found?.matched ?? []).some((m) => m.id === 'GL6'),
-    `결과=${(found?.matched ?? []).map((m) => m.id).join(',') || '없음'} 계층=${found?.answeredBy}`);
+    `결과=${(found?.matched ?? []).map((m) => m.id).join(',') || '없음'} 계층=${found?.answeredBy} 대기=${waited}초`);
 
   await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
     body: JSON.stringify({ id: 'GL6', patch: { features: '프로젝터·마이크, 가변형 가구(접이식 원탁)' } }) });

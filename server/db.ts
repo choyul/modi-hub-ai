@@ -35,7 +35,11 @@ export interface DbSpace {
 }
 
 let spacesCache: { rows: DbSpace[]; at: number } | null = null;
-const SPACES_TTL_MS = 60_000;
+// 캐시 수명. invalidateSpacesCache() 는 그 요청을 처리한 인스턴스에만 듣기 때문에,
+// 다른 인스턴스가 옛 값을 보는 시간이 곧 이 값이 된다. 담당자가 값을 고친 뒤
+// 검색에 반영되기까지의 최대 지연이므로 짧게 잡는다. 공간 테이블은 11행이라
+// 매번 조회해도 부담이 없다 — 캐시는 지연 단축이 아니라 호출량 절감용이다.
+const SPACES_TTL_MS = 15_000;
 
 /**
  * 공간 캐시 비우기 — 담당자가 값을 고친 직후에 부른다.

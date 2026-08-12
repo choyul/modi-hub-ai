@@ -327,6 +327,15 @@ findings = [
      "개선안: 공유 저장소(Upstash Redis 등) 기반 카운터로 이전. "
      "현 단계는 시연 규모라 미조치, 한계를 문서에 명시",
      "잔존"),
+    ("L-03", "제약(잔존)", "TC-051",
+     "담당자가 고친 값이 검색에 즉시 반영되지 않는 경우가 있음 (간헐적)",
+     "공간 캐시가 서버리스 인스턴스의 메모리에 있어, 저장을 처리한 인스턴스에서만 "
+     "캐시가 비워진다. 검색을 다른 인스턴스가 받으면 캐시 수명만큼 옛 값을 본다. "
+     "L-02(요청 한도)와 같은 뿌리 — 인스턴스별 상태",
+     "캐시 수명을 60초→15초로 단축(공간 11행이라 조회 부담 없음). "
+     "테스트도 즉시성 대신 '20초 이내 반영'으로 기대치를 현실에 맞춤. "
+     "완전 해결은 공유 캐시(Redis) 필요 — 현 규모에서는 과잉",
+     "완화"),
     ("E-01", "검색결함", "평가셋 #5",
      "'하룻밤 묵을 곳' → 0건 (숙소 검색 전체 실패)",
      "야간이용 판별 정규식 /밤|야간|새벽|심야|밤새/ 가 '하룻밤'의 '밤'을 잡아, "
@@ -362,7 +371,8 @@ for i, f in enumerate(findings):
     ws.cell(row=r, column=2).font = Font(name=F, size=10, bold=True,
                                          color=OCHRE if "제약" in kind else GRAY)
     ws.cell(row=r, column=7).font = Font(name=F, size=10, bold=True,
-                                         color=PINE if f[6] == "조치완료" else CLAY)
+                                         color=PINE if f[6] == "조치완료"
+                                         else (OCHRE if f[6] == "완화" else CLAY))
     ws.cell(row=r, column=7).alignment = CTR
     ws.row_dimensions[r].height = 76
 
