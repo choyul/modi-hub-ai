@@ -85,9 +85,15 @@ export default function AdminDashboard() {
     <div className="p-8 pb-20">
       <div className="flex flex-wrap justify-between items-end gap-3 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">운영 대시보드</h1>
-          <p className="text-slate-500 mt-1">
-            적재된 검색 로그 {s.totalSearches}건을 그 자리에서 집계한 값입니다.
+          <h1 className="text-2xl font-bold text-slate-900">
+            봉화에서 지금 무엇을 찾고 있나
+          </h1>
+          <p className="text-slate-500 mt-1 max-w-2xl leading-relaxed">
+            이 서비스는 <b className="text-slate-700">검색이 실패한 순간</b>을 기록합니다.
+            찾았는데 없었던 공간이 다음 유휴공간 활용의 근거가 됩니다.
+            <span className="block text-[13px] text-slate-400 mt-0.5">
+              적재된 검색 로그 {s.totalSearches}건을 그 자리에서 집계한 값입니다.
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-2">

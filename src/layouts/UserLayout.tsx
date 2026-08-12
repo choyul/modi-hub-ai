@@ -8,13 +8,15 @@ import { useAuth } from '../contexts/AuthContext';
  * - PL-09: 푸터의 허위 상태 표시("Gemini 1.5 Flash Connected") 제거
  */
 
-const NAV = [
-  { to: '/', label: '홈' },
-  // 「조건조회」는 「공간안내」로 합쳤다 — 같은 데이터를 같은 방식으로 보여주면서
-  // 필터 개수와 표시 형식만 다른 메뉴가 둘 있어 이용자가 구분할 수 없었다.
-  { to: '/spaces', label: '공간안내' },
-  { to: '/reservations', label: '예약현황' },
-];
+/**
+ * 메뉴는 지금 누를 수 있는 것만 둔다.
+ * - 「공간안내」는 홈 아래에 그대로 들어갔으므로 별도 메뉴를 두지 않는다
+ *   (/spaces 주소 자체는 살아 있다 — 카테고리 링크·기존 북마크용)
+ * - 「예약현황」은 로그인해야 볼 수 있는 화면이므로 로그인 전에는 감춘다.
+ *   눌러도 로그인 화면으로 튕기는 메뉴를 보여줄 이유가 없다.
+ */
+const NAV = [{ to: '/', label: '홈' }];
+const NAV_AUTHED = [{ to: '/reservations', label: '예약현황' }];
 
 export default function UserLayout() {
   const location = useLocation();
@@ -57,7 +59,7 @@ export default function UserLayout() {
 
           <div className="flex items-center gap-4 md:gap-8">
             <nav className="hidden md:flex gap-6 items-center text-sm font-medium text-slate-600">
-              {NAV.map((n) => (
+              {[...NAV, ...(isLoggedIn ? NAV_AUTHED : [])].map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
@@ -130,7 +132,7 @@ export default function UserLayout() {
 
         {mobileOpen && (
           <nav className="md:hidden absolute left-0 right-0 top-20 bg-white border-b border-slate-200 shadow-lg px-4 py-3 space-y-1">
-            {NAV.map((n) => (
+            {[...NAV, ...(isLoggedIn ? NAV_AUTHED : [])].map((n) => (
               <Link
                 key={n.to}
                 to={n.to}

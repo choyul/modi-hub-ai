@@ -395,7 +395,8 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
 {
   // 2026-08-13 요구 변경: 시스템 자기설명 문구('AI 미사용', '계획값' 고지)를
   // 사용자 요청으로 제거 — 일반 예약 서비스 톤. 검증도 반대로 뒤집는다.
-  const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8');
+  const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8')
+    + readFileSync('src/components/SpaceBrowser.tsx', 'utf8');
   const clean = !src.includes('AI를 사용하지') && !src.includes('확인 필요」로 안내');
   T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07·G1', area: 'UX',
       title: '목록 화면에 시스템 자기설명 문구가 없다 (예약 서비스 톤)',
@@ -405,7 +406,7 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
 }
 {
   // 통합의 핵심 — 공무원에게 필요했던 '조건 여러 개'가 한 화면에 있는가
-  const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8');
+  const src = readFileSync('src/components/SpaceBrowser.tsx', 'utf8');
   const hasAll = ['category', 'facility', 'headcount'].every((k) => src.includes(`'${k}'`));
   const hasSort = src.includes("'cap_asc'") && src.includes("'cap_desc'");
   T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07', area: 'UX',
@@ -413,6 +414,37 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
       pre: '「조건조회」를 「공간안내」로 통합', input: '화면 구성 확인',
       expected: '필터 3종 + 정렬 — 별도 메뉴 불필요' },
     hasAll && hasSort, `필터 3종=${hasAll} · 정렬=${hasSort}`);
+}
+{
+  const home = readFileSync('src/pages/user/UserHome.tsx', 'utf8');
+  T({ persona: 'P1 김명자(68·주민)', role: 'O', feature: 'SP-02·G10', area: 'UX',
+      title: '홈에서 물어보고 바로 아래에서 공간을 볼 수 있다',
+      pre: '홈과 공간안내 통합', input: '홈 화면 구성',
+      expected: '검색 입력 + 공간 목록이 한 화면에' },
+    home.includes('어떤 활동을 계획') && home.includes('SpaceBrowser'),
+    `질문=${home.includes('어떤 활동을 계획')} · 목록=${home.includes('SpaceBrowser')}`);
+}
+{
+  // 주석은 빼고 '화면에 그려지는 코드'만 본다 — 설계 의도를 적어 둔 주석을
+  // 잔존으로 오판하면, 기록을 지워야 통과하는 테스트가 된다.
+  const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const home = stripComments(readFileSync('src/pages/user/UserHome.tsx', 'utf8'));
+  const admin = readFileSync('src/pages/admin/AdminDashboard.tsx', 'utf8');
+  T({ persona: 'P5 조율(담당자)', role: 'O', feature: 'AD-01', area: 'UX',
+      title: '검색 집계는 이용자 화면에서 빠지고 담당자 화면에 있다',
+      pre: '이용자에겐 의미 없는 지표', input: '홈 · 대시보드',
+      expected: '홈에 없고 대시보드에 있음' },
+    !home.includes('무엇을 찾고 있나') && admin.includes('무엇을 찾고 있나'),
+    `홈=${home.includes('무엇을 찾고 있나') ? '남아있음' : '제거됨'} · 대시보드=${admin.includes('무엇을 찾고 있나') ? '있음' : '없음'}`);
+}
+{
+  const nav = readFileSync('src/layouts/UserLayout.tsx', 'utf8');
+  T({ persona: '미인증 외부인', role: 'O', feature: 'AU-01·G10', area: 'UX',
+      title: '로그인해야 볼 수 있는 메뉴는 로그인 전에 보이지 않는다',
+      pre: '예약현황은 로그인 필수', input: '네비 구성',
+      expected: '예약현황이 isLoggedIn 일 때만 노출' },
+    nav.includes('NAV_AUTHED') && nav.includes('isLoggedIn ? NAV_AUTHED'),
+    `조건부 노출=${nav.includes('isLoggedIn ? NAV_AUTHED')}`);
 }
 {
   const nav = readFileSync('src/layouts/UserLayout.tsx', 'utf8');
