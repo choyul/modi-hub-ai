@@ -120,7 +120,20 @@ export default async function handler(req: any, res: any) {
       const { data, error } = await sb.from('spaces')
         .select(EDITABLE.join(',') + ',id,updated_at').order('id');
       if (error) throw new Error(error.message);
-      return res.status(200).json({ spaces: data ?? [], editable: EDITABLE, enums: ENUMS });
+
+      // 어느 공간에 직접 올린 사진이 있는지 — 파일 존재가 곧 상태다
+      // (사진 경로용 DB 컬럼을 따로 두지 않는다)
+      const photos: Record<string, string> = {};
+      const { data: files } = await sb.storage.from('space-photos').list();
+      for (const f of files ?? []) {
+        const sid = f.name.replace(/\.jpg$/i, '');
+        const { data: pub } = sb.storage.from('space-photos').getPublicUrl(f.name);
+        // 갱신 시각을 붙여 브라우저가 옛 사진을 계속 보여주지 않게 한다
+        const v = f.updated_at ? new Date(f.updated_at).getTime() : Date.now();
+        photos[sid] = `${pub.publicUrl}?v=${v}`;
+      }
+
+      return res.status(200).json({ spaces: data ?? [], photos, editable: EDITABLE, enums: ENUMS });
     }
 
     if (req.method !== 'PATCH') {

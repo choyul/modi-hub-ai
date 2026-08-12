@@ -163,7 +163,7 @@ export default function UserSpaces() {
             {rows.map((space) => (
               <div key={space.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col">
                 <div className="h-48 relative overflow-hidden bg-slate-100">
-                  <SpacePhoto category={space.category} className="w-full h-full" />
+                  <SpacePhoto category={space.category} spaceId={space.id} className="w-full h-full" />
                   <div className="absolute top-3 left-3 flex flex-col gap-1">
                     <span className="px-2 py-1 bg-black/60 text-white text-[10px] rounded font-medium backdrop-blur-sm shadow-sm">{space.facility}</span>
                     {isIncomplete(space as Space) && (

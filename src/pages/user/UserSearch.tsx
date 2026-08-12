@@ -495,7 +495,7 @@ export default function UserSearch() {
 
                       <div className="md:flex">
                         <div className="md:w-1/3 bg-slate-200 h-48 md:h-auto relative overflow-hidden flex items-center justify-center">
-                          <SpacePhoto category={spaceInfo.category} className="w-full h-full" />
+                          <SpacePhoto category={spaceInfo.category} spaceId={spaceInfo.id} className="w-full h-full" />
                           <div className="absolute bottom-2 left-2 flex gap-1">
                             <span className="px-2 py-0.5 bg-black/50 text-white text-[10px] rounded backdrop-blur-sm">
                               {spaceInfo.facility}
@@ -646,7 +646,7 @@ export default function UserSearch() {
                             className="relative border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm flex flex-col group hover:border-indigo-200 hover:shadow-md transition-all"
                           >
                             <div className="h-36 relative overflow-hidden bg-slate-100">
-                              <SpacePhoto category={spaceInfo.category} className="w-full h-full" />
+                              <SpacePhoto category={spaceInfo.category} spaceId={spaceInfo.id} className="w-full h-full" />
                               <div className="absolute top-2 right-2 bg-white/90 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">
                                 추천 {idx + 2}순위
                               </div>

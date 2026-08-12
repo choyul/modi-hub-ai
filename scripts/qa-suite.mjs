@@ -431,6 +431,8 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
 console.log('\n▸ A 담당자 — 소비의 흐름');
 
 const adminH = { 'x-admin-token': ADMIN_TOKEN };
+// 테스트용 1x1 PNG — 실제 이미지여야 업로드 경로가 검증된다
+const PNG_1PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 let stats = null;
 {
   const { status, body } = await api('/api/stats', { headers: adminH });
@@ -571,6 +573,64 @@ let stats = null;
     b1?.space?.contact === '054-679-1234' && b2?.space?.contact === null,
     `입력후="${b1?.space?.contact}" → 비운후=${JSON.stringify(b2?.space?.contact)}`);
 }
+// ── AD-11 공간 사진 ─────────────────────────────────────────
+{
+  const { status } = await api('/api/admin-photo', {
+    method: 'POST', body: JSON.stringify({ id: 'GL6', dataUrl: 'data:image/jpeg;base64,AAAA' }) });
+  T({ persona: '미인증 외부인', role: 'A', feature: 'AD-11', area: '보안',
+      title: '토큰 없이는 공간 사진을 바꿀 수 없다',
+      pre: '헤더 없음', input: 'POST /api/admin-photo',
+      expected: '401' }, status === 401, `HTTP ${status}`);
+}
+{
+  const { status, body } = await api('/api/admin-photo', {
+    method: 'POST', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', dataUrl: 'data:text/html;base64,PGgxPng8L2gxPg==' }) });
+  T({ persona: '권한 오용', role: 'A', feature: 'AD-11', area: '보안',
+      title: '이미지가 아닌 파일은 올릴 수 없다',
+      pre: '토큰 보유', input: 'text/html data URL',
+      expected: '400 거절' }, status === 400, `HTTP ${status} · ${body?.error}`);
+}
+{
+  const { status, body } = await api('/api/admin-photo', {
+    method: 'POST', headers: adminH,
+    body: JSON.stringify({ id: 'ZZ99', dataUrl: PNG_1PX }) });
+  T({ persona: '권한 오용', role: 'A', feature: 'AD-11', area: '보안',
+      title: '존재하지 않는 공간에는 사진을 올릴 수 없다',
+      pre: '토큰 보유', input: 'id=ZZ99',
+      expected: '404' }, status === 404, `HTTP ${status} · ${body?.error}`);
+}
+{
+  // 올리기 → 공개 URL 접근 → 목록 반영 → 내리기까지 한 바퀴
+  const up = await api('/api/admin-photo', {
+    method: 'POST', headers: adminH, body: JSON.stringify({ id: 'GL6', dataUrl: PNG_1PX }) });
+  const url = up.body?.photoUrl;
+  const pub = url ? await fetch(url) : null;
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11', area: '공간관리',
+      title: '공간 사진을 올리면 공개 주소로 바로 보인다',
+      pre: 'GL6', input: '이미지 업로드',
+      expected: '200 · 공개 URL 접근 가능' },
+    up.status === 200 && pub?.status === 200,
+    `업로드 ${up.status} · 공개 ${pub?.status} · ${up.body?.bytes}bytes`);
+
+  const list = await api('/api/admin-spaces', { headers: adminH });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11', area: '공간관리',
+      title: '어느 공간에 사진이 있는지 목록에서 확인된다',
+      pre: '위에서 올림', input: 'GET /api/admin-spaces',
+      expected: 'photos 에 GL6 포함' },
+    Boolean(list.body?.photos?.GL6), `photos=${Object.keys(list.body?.photos ?? {}).join(',') || '없음'}`);
+
+  const del = await api('/api/admin-photo', {
+    method: 'DELETE', headers: adminH, body: JSON.stringify({ id: 'GL6' }) });
+  const after = await api('/api/admin-spaces', { headers: adminH });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11', area: '공간관리',
+      title: '사진을 내리면 용도별 예시 사진으로 돌아간다',
+      pre: '사진 있음', input: 'DELETE /api/admin-photo',
+      expected: '200 · photos 에서 제외' },
+    del.status === 200 && !after.body?.photos?.GL6,
+    `HTTP ${del.status} · 잔여=${Object.keys(after.body?.photos ?? {}).join(',') || '없음'}`);
+}
+
 {
   // 수정이 검색에 반영되는가 (search_text·임베딩 재색인 + 캐시 무효화)
   await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,

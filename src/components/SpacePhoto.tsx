@@ -1,13 +1,16 @@
 import { useState } from 'react';
 
 /**
- * 공간 사진 자리 (SP-09).
+ * 공간 사진 (SP-09).
  *
- * 준공 전이라 실물 사진이 아직 없다. 그래서 용도별 '예시 이미지'(자유 이용
- * 라이선스)를 배경으로 쓰되, 이용자가 실제 봉화 공간으로 오인하지 않도록
- * 「예시 이미지」 라벨을 항상 함께 표시한다 — 없는 것을 있다고 안내하지 않는
- * 이 서비스의 원칙을 사진에도 적용한 것이다. 실물 사진이 확보되면 이 자리에
- * 그대로 교체된다. 이미지 출처·라이선스는 /credits 에 명시한다.
+ * 표시 우선순위
+ *   ① 담당자가 올린 실제 사진 (space-photos/{공간ID}.jpg)
+ *   ② 용도별 예시 사진 (/spaces/{용도}.jpg) — 「예시 이미지」 라벨을 붙인다
+ *   ③ 아이콘 자리표시 (둘 다 실패했을 때)
+ *
+ * 사진 유무를 DB 에 따로 기록하지 않는다. 파일이 있으면 ①, 없으면 자연히 ②로
+ * 내려간다 — 스키마를 건드리지 않고도 담당자가 올린 순간 바로 바뀐다.
+ * ②에만 라벨을 붙이는 이유는 실제 봉화 공간으로 오인하지 않게 하기 위함이다.
  */
 const CATEGORY: Record<string, { slug: string; icon: string }> = {
   '카페·라운지': { slug: 'cafe', icon: 'local_cafe' },
@@ -19,18 +22,29 @@ const CATEGORY: Record<string, { slug: string; icon: string }> = {
   '돌봄': { slug: 'care', icon: 'volunteer_activism' },
 };
 
+const PHOTO_BASE = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/storage/v1/object/public/space-photos`;
+
 export default function SpacePhoto({
   category,
+  spaceId,
+  version,
   className = '',
 }: {
   category: string;
+  /** 있으면 이 공간의 실제 사진을 먼저 찾는다 */
+  spaceId?: string;
+  /** 사진 교체 직후 캐시를 건너뛰기 위한 값 */
+  version?: string | number;
   className?: string;
 }) {
-  const [errored, setErrored] = useState(false);
   const meta = CATEGORY[category] ?? { slug: 'default', icon: 'apartment' };
 
-  // 이미지 로드 실패 시(파일 없음 등) 정직한 아이콘 플레이스홀더로 되돌린다
-  if (errored) {
+  // real → sample → icon 순으로 내려간다
+  const [stage, setStage] = useState<'real' | 'sample' | 'icon'>(
+    spaceId && import.meta.env.VITE_SUPABASE_URL ? 'real' : 'sample'
+  );
+
+  if (stage === 'icon') {
     return (
       <div
         className={`bg-slate-100 flex flex-col items-center justify-center gap-1 text-slate-400 ${className}`}
@@ -43,19 +57,26 @@ export default function SpacePhoto({
     );
   }
 
+  const isReal = stage === 'real';
+  const src = isReal
+    ? `${PHOTO_BASE}/${spaceId}.jpg${version ? `?v=${version}` : ''}`
+    : `/spaces/${meta.slug}.jpg`;
+
   return (
     <div className={`relative bg-slate-100 overflow-hidden ${className}`}>
       <img
-        src={`/spaces/${meta.slug}.jpg`}
-        alt={`${category} 예시 이미지`}
+        key={src}
+        src={src}
+        alt={isReal ? `${category} 공간 사진` : `${category} 예시 이미지`}
         loading="lazy"
-        onError={() => setErrored(true)}
+        onError={() => setStage(isReal ? 'sample' : 'icon')}
         className="w-full h-full object-cover"
       />
-      {/* 실물 사진이 아님을 항상 알린다 (정직성) */}
-      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-black/55 text-white/95 text-[10px] font-medium rounded backdrop-blur-sm">
-        예시 이미지
-      </span>
+      {!isReal && (
+        <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-black/55 text-white/95 text-[10px] font-medium rounded backdrop-blur-sm">
+          예시 이미지
+        </span>
+      )}
     </div>
   );
 }

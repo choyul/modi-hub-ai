@@ -50,6 +50,8 @@ export default function AdminSpace() {
   const [onlyIncomplete, setOnlyIncomplete] = useState(false);
   const [facility, setFacility] = useState('all');
   const [editing, setEditing] = useState<Space | null>(null);
+  // 공간 ID → 올린 사진 URL. 파일 존재가 곧 상태라 DB 컬럼이 없다.
+  const [photos, setPhotos] = useState<Record<string, string>>({});
 
   const token = () => localStorage.getItem(ADMIN_TOKEN_KEY) || '';
 
@@ -60,6 +62,7 @@ export default function AdminSpace() {
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || '불러오지 못했습니다.');
       setSpaces(body.spaces);
+      setPhotos(body.photos ?? {});
       setErr(null);
     } catch (e: any) {
       setErr(e.message);
@@ -141,6 +144,7 @@ export default function AdminSpace() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-500 text-xs">
             <tr>
+              <th className="px-4 py-3 text-left font-bold w-[76px]">사진</th>
               <th className="px-4 py-3 text-left font-bold">시설 · 공간</th>
               <th className="px-4 py-3 text-left font-bold">소관</th>
               <th className="px-4 py-3 text-left font-bold">수용인원</th>
@@ -154,6 +158,17 @@ export default function AdminSpace() {
               const missing = missingFields(s);
               return (
                 <tr key={s.id} className={missing.length ? 'bg-amber-50/40' : ''}>
+                  <td className="px-4 py-3">
+                    {photos[s.id] ? (
+                      <img src={photos[s.id]} alt=""
+                        className="w-14 h-10 object-cover rounded-md border border-slate-200" />
+                    ) : (
+                      <div className="w-14 h-10 rounded-md bg-slate-100 border border-slate-200
+                        flex items-center justify-center text-[9px] text-slate-400 text-center leading-tight">
+                        예시<br />사진
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="font-bold text-slate-900">{s.name}</div>
                     <div className="text-xs text-slate-500">{s.facility} · {s.floor} · {s.category}</div>
@@ -203,6 +218,15 @@ export default function AdminSpace() {
       {editing && (
         <EditPanel
           space={editing}
+          photoUrl={photos[editing.id] ?? null}
+          onPhotoChange={(url) =>
+            setPhotos((prev) => {
+              const next = { ...prev };
+              if (url) next[editing.id] = url;
+              else delete next[editing.id];
+              return next;
+            })
+          }
           onClose={() => setEditing(null)}
           onSaved={(updated, note) => {
             setSpaces((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
@@ -216,8 +240,10 @@ export default function AdminSpace() {
 }
 
 // ── 편집 패널 ────────────────────────────────────────────────
-function EditPanel({ space, onClose, onSaved }: {
+function EditPanel({ space, photoUrl, onPhotoChange, onClose, onSaved }: {
   space: Space;
+  photoUrl: string | null;
+  onPhotoChange: (url: string | null) => void;
   onClose: () => void;
   onSaved: (s: Space, note: string | null) => void;
 }) {
@@ -228,6 +254,83 @@ function EditPanel({ space, onClose, onSaved }: {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(photoUrl);
+  const [photoBusy, setPhotoBusy] = useState(false);
+
+  /**
+   * 올리기 전에 브라우저에서 줄인다 — 휴대폰 사진은 5MB 를 훌쩍 넘는 경우가
+   * 많아 그대로 보내면 실패한다. 가로 1600px·품질 0.82 면 카드·상세 어디에
+   * 써도 충분하면서 대개 300KB 안쪽으로 떨어진다.
+   */
+  function shrink(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('이미지를 열지 못했습니다.'));
+        img.onload = () => {
+          const scale = Math.min(1, 1600 / img.width);
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * scale);
+          c.height = Math.round(img.height * scale);
+          c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadPhoto(file: File) {
+    setPhotoBusy(true);
+    setError(null);
+    try {
+      const dataUrl = await shrink(file);
+      const res = await fetch('/api/admin-photo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': localStorage.getItem(ADMIN_TOKEN_KEY) || '',
+        },
+        body: JSON.stringify({ id: space.id, dataUrl }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error || '사진을 올리지 못했습니다.');
+      // 방금 올린 사진이 바로 보이도록 캐시를 건너뛴다
+      const url = `${body.photoUrl}?v=${Date.now()}`;
+      setPhoto(url);
+      onPhotoChange(url);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function removePhoto() {
+    setPhotoBusy(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin-photo', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': localStorage.getItem(ADMIN_TOKEN_KEY) || '',
+        },
+        body: JSON.stringify({ id: space.id }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error || '사진을 내리지 못했습니다.');
+      setPhoto(null);
+      onPhotoChange(null);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
 
   const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
   const val = (k: string) => (form[k] ?? '') as any;
@@ -291,6 +394,60 @@ function EditPanel({ space, onClose, onSaved }: {
             <b className="text-slate-800">비우면 「확인 필요」로 저장됩니다.</b> 확인하지 못한 값을
             짐작으로 채우지 마세요 — 이용자가 그 값을 믿고 헛걸음합니다.
           </p>
+
+          <section>
+            <h3 className="text-sm font-bold text-slate-800 mb-3">사진</h3>
+            <div className="flex items-start gap-4">
+              <div className="w-44 h-32 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shrink-0 relative">
+                {photo ? (
+                  <img src={photo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-1">
+                    <span className="material-symbols-outlined text-2xl" aria-hidden="true">image</span>
+                    <span className="text-[11px] font-medium">용도별 예시 사진</span>
+                  </div>
+                )}
+                {photoBusy && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-xs font-bold text-slate-600">
+                    처리 중…
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <label className={`px-4 py-2 rounded-lg text-sm font-bold cursor-pointer ${
+                    photoBusy ? 'bg-slate-200 text-slate-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}>
+                    {photo ? '사진 바꾸기' : '사진 올리기'}
+                    <input
+                      type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                      disabled={photoBusy}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadPhoto(f);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                  {photo && (
+                    <button
+                      type="button" onClick={removePhoto} disabled={photoBusy}
+                      className="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 border border-slate-200 disabled:opacity-50"
+                    >
+                      사진 내리기
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11.5px] text-slate-500 leading-relaxed">
+                  실제 공간 사진을 올리면 이용자 화면에 바로 반영됩니다. 올리지 않으면
+                  용도별 예시 사진이 「예시 이미지」 표시와 함께 나갑니다.
+                  <span className="block text-slate-400 mt-0.5">
+                    JPG·PNG·WebP · 올릴 때 자동으로 줄여 저장합니다 · 사진은 저장 버튼과 무관하게 즉시 적용됩니다
+                  </span>
+                </p>
+              </div>
+            </div>
+          </section>
 
           <section>
             <h3 className="text-sm font-bold text-slate-800 mb-3">기본</h3>

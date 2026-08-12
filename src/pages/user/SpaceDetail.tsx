@@ -91,7 +91,7 @@ export default function SpaceDetail() {
         </button>
 
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <SpacePhoto category={space.category} className="h-52 w-full" />
+          <SpacePhoto category={space.category} spaceId={space.id} className="h-52 w-full" />
 
           <div className="p-6 md:p-8">
             {/* 신뢰층 헤더 (SP-04~06 · SP-10 · LG-08) */}

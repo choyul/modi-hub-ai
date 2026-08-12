@@ -1,8 +1,8 @@
 {
   "summary": {
     "base": "https://modi-hub-ai.vercel.app",
-    "total": 59,
-    "pass": 59,
+    "total": 65,
+    "pass": 65,
     "fail": 0,
     "rate": 100,
     "byRole": {
@@ -19,8 +19,8 @@
         "pass": 5
       },
       "A": {
-        "total": 16,
-        "pass": 16
+        "total": 22,
+        "pass": 22
       },
       "S": {
         "total": 6,
@@ -28,19 +28,19 @@
       }
     },
     "stats": {
-      "totalSearches": 48,
-      "successCount": 20,
-      "unmetCount": 28,
-      "unmetRate": 58,
-      "registeredDemands": 3,
-      "contactLeft": 3,
+      "totalSearches": 67,
+      "successCount": 27,
+      "unmetCount": 40,
+      "unmetRate": 60,
+      "registeredDemands": 4,
+      "contactLeft": 4,
       "reservationCount": 3,
       "pendingReservations": 0,
       "cancelledReservations": 3,
-      "feedbackCount": 3,
-      "avgLatencyMs": 368,
-      "noLlmCount": 47,
-      "noLlmRate": 98,
+      "feedbackCount": 4,
+      "avgLatencyMs": 661,
+      "noLlmCount": 65,
+      "noLlmRate": 97,
       "notifyWaiters": 0
     }
   },
@@ -56,7 +56,7 @@
       "pre": "로그인 없음",
       "input": "\"부녀회 8명이 김장할 만한 곳\"",
       "expected": "200 · 결과 1건 이상 · 키친 계열 포함",
-      "actual": "200 · GL3,HO2 · 744ms",
+      "actual": "200 · GL3,HO2 · 526ms",
       "result": "PASS"
     },
     {
@@ -84,7 +84,7 @@
       "pre": "서버 워밍업 후 — 콜드스타트 제외",
       "input": "동일",
       "expected": "3,000ms 미만",
-      "actual": "744ms (콜드스타트 최초 1회는 2446ms)",
+      "actual": "526ms (콜드스타트 최초 1회는 22993ms)",
       "result": "PASS"
     },
     {
@@ -154,7 +154,7 @@
       "pre": "봉화 거점시설에 수영장 없음",
       "input": "\"수영장 빌릴 수 있나요\"",
       "expected": "결과 0건 · 미충족으로 기록",
-      "actual": "결과=0건 · 유형=\"수영장\"",
+      "actual": "결과=0건 · 유형=\"분류 미상\"",
       "result": "PASS"
     },
     {
@@ -264,9 +264,9 @@
       "area": "인증",
       "title": "주민이 스스로 계정을 만든다 (확인 메일 없이 바로 사용)",
       "pre": "로그인 없음",
-      "input": "qa-1786551293303@test.modi",
+      "input": "qa-1786564730471@test.modi",
       "expected": "200 · 곧바로 로그인 가능한 상태",
-      "actual": "HTTP 200 qa-1786551293303@test.modi",
+      "actual": "HTTP 200 qa-1786564730471@test.modi",
       "result": "PASS"
     },
     {
@@ -364,7 +364,7 @@
       "pre": "GL4M = self/live · 정원 6명",
       "input": "9/15 14~16시 · 5명 · 독서모임",
       "expected": "200 접수",
-      "actual": "HTTP 200 · REV-260812-6989",
+      "actual": "HTTP 200 · REV-260812-4763",
       "result": "PASS"
     },
     {
@@ -406,7 +406,7 @@
       "pre": "GL7 = self/live · 60,000원/1박",
       "input": "12/24 · 2명",
       "expected": "200 · 승인대기",
-      "actual": "HTTP 200 · REV-260812-8162",
+      "actual": "HTTP 200 · REV-260812-6392",
       "result": "PASS"
     },
     {
@@ -434,7 +434,7 @@
       "pre": "GL4 = self/live · 단체는 온라인 신청",
       "input": "12명",
       "expected": "200 · 승인대기",
-      "actual": "HTTP 200 · REV-260812-1111",
+      "actual": "HTTP 200 · REV-260812-9563",
       "result": "PASS"
     },
     {
@@ -474,7 +474,7 @@
       "area": "대관신청",
       "title": "승인 전이면 스스로 취소할 수 있다 (되돌리기)",
       "pre": "승인대기 상태",
-      "input": "DELETE REV-260812-6989",
+      "input": "DELETE REV-260812-4763",
       "expected": "200 · status=\"취소\"",
       "actual": "HTTP 200 · 취소",
       "result": "PASS"
@@ -488,7 +488,7 @@
       "area": "보안",
       "title": "남의 신청은 취소할 수 없다",
       "pre": "다른 계정으로 로그인",
-      "input": "DELETE REV-260812-6989 (타인 소유)",
+      "input": "DELETE REV-260812-4763 (타인 소유)",
       "expected": "404/403 — 성공(200)이면 중대 결함",
       "actual": "HTTP 404",
       "result": "PASS"
@@ -574,7 +574,7 @@
       "pre": "토큰 보유",
       "input": "GET /api/stats",
       "expected": "200 · 검색 누적 집계",
-      "actual": "검색 48건 · 미충족 28건",
+      "actual": "검색 67건 · 미충족 40건",
       "result": "PASS"
     },
     {
@@ -588,7 +588,7 @@
       "pre": "미충족 발생",
       "input": "unmetTypes",
       "expected": "유형 1개 이상",
-      "actual": "분류 미상(24), 영주 지역 회의·교육(3), 수영장(1)",
+      "actual": "분류 미상(34), 영주 지역 회의·교육(4), 워밍업 공간(1), 수영장(1)",
       "result": "PASS"
     },
     {
@@ -602,7 +602,7 @@
       "pre": "검색 누적",
       "input": "noLlmRate",
       "expected": "숫자값 · 계층 분포 표기",
-      "actual": "무LLM 98% · ③ 임베딩:26 ① 조건필터:15 ② 퍼지:6 ④ LLM:1",
+      "actual": "무LLM 97% · ③ 임베딩:37 ① 조건필터:20 ② 퍼지:8 ④ LLM:2",
       "result": "PASS"
     },
     {
@@ -630,7 +630,7 @@
       "pre": "피드백 제출됨",
       "input": "feedbackReasons",
       "expected": "1건 이상",
-      "actual": "3건 · 시간이 안 맞아요",
+      "actual": "4건 · 시간이 안 맞아요",
       "result": "PASS"
     },
     {
@@ -776,6 +776,90 @@
     {
       "no": 53,
       "tcId": "TC-053",
+      "persona": "미인증 외부인",
+      "role": "A",
+      "feature": "AD-11",
+      "area": "보안",
+      "title": "토큰 없이는 공간 사진을 바꿀 수 없다",
+      "pre": "헤더 없음",
+      "input": "POST /api/admin-photo",
+      "expected": "401",
+      "actual": "HTTP 401",
+      "result": "PASS"
+    },
+    {
+      "no": 54,
+      "tcId": "TC-054",
+      "persona": "권한 오용",
+      "role": "A",
+      "feature": "AD-11",
+      "area": "보안",
+      "title": "이미지가 아닌 파일은 올릴 수 없다",
+      "pre": "토큰 보유",
+      "input": "text/html data URL",
+      "expected": "400 거절",
+      "actual": "HTTP 400 · JPG·PNG·WebP 이미지만 올릴 수 있습니다.",
+      "result": "PASS"
+    },
+    {
+      "no": 55,
+      "tcId": "TC-055",
+      "persona": "권한 오용",
+      "role": "A",
+      "feature": "AD-11",
+      "area": "보안",
+      "title": "존재하지 않는 공간에는 사진을 올릴 수 없다",
+      "pre": "토큰 보유",
+      "input": "id=ZZ99",
+      "expected": "404",
+      "actual": "HTTP 404 · 해당 공간이 없습니다.",
+      "result": "PASS"
+    },
+    {
+      "no": 56,
+      "tcId": "TC-056",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-11",
+      "area": "공간관리",
+      "title": "공간 사진을 올리면 공개 주소로 바로 보인다",
+      "pre": "GL6",
+      "input": "이미지 업로드",
+      "expected": "200 · 공개 URL 접근 가능",
+      "actual": "업로드 200 · 공개 200 · 70bytes",
+      "result": "PASS"
+    },
+    {
+      "no": 57,
+      "tcId": "TC-057",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-11",
+      "area": "공간관리",
+      "title": "어느 공간에 사진이 있는지 목록에서 확인된다",
+      "pre": "위에서 올림",
+      "input": "GET /api/admin-spaces",
+      "expected": "photos 에 GL6 포함",
+      "actual": "photos=GL6",
+      "result": "PASS"
+    },
+    {
+      "no": 58,
+      "tcId": "TC-058",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-11",
+      "area": "공간관리",
+      "title": "사진을 내리면 용도별 예시 사진으로 돌아간다",
+      "pre": "사진 있음",
+      "input": "DELETE /api/admin-photo",
+      "expected": "200 · photos 에서 제외",
+      "actual": "HTTP 200 · 잔여=없음",
+      "result": "PASS"
+    },
+    {
+      "no": 59,
+      "tcId": "TC-059",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11·SR-12",
@@ -788,8 +872,8 @@
       "result": "PASS"
     },
     {
-      "no": 54,
-      "tcId": "TC-054",
+      "no": 60,
+      "tcId": "TC-060",
       "persona": "시스템(배치)",
       "role": "S",
       "feature": "SR-03",
@@ -802,8 +886,8 @@
       "result": "PASS"
     },
     {
-      "no": 55,
-      "tcId": "TC-055",
+      "no": 61,
+      "tcId": "TC-061",
       "persona": "시스템(배치)",
       "role": "S",
       "feature": "LG-04",
@@ -812,12 +896,12 @@
       "pre": "로그 누적",
       "input": "search_logs.raw_query 전수 검사",
       "expected": "전화·이메일 패턴 0건",
-      "actual": "49건 중 노출 0건",
+      "actual": "50건 중 노출 0건",
       "result": "PASS"
     },
     {
-      "no": 56,
-      "tcId": "TC-056",
+      "no": 62,
+      "tcId": "TC-062",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "RLS",
@@ -830,8 +914,8 @@
       "result": "PASS"
     },
     {
-      "no": 57,
-      "tcId": "TC-057",
+      "no": 63,
+      "tcId": "TC-063",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "RLS",
@@ -844,22 +928,22 @@
       "result": "PASS"
     },
     {
-      "no": 58,
-      "tcId": "TC-058",
+      "no": 64,
+      "tcId": "TC-064",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "NF-03",
       "area": "보안",
       "title": "브라우저 번들에 Gemini 키·service_role 키가 없다",
       "pre": "npm run build 산출물",
-      "input": "dist/assets/*.js (555KB)",
+      "input": "dist/assets/*.js (559KB)",
       "expected": "API 키 문자열 0건",
       "actual": "Gemini키=없음 · secret키=없음 (실제 키 값 대조)",
       "result": "PASS"
     },
     {
-      "no": 59,
-      "tcId": "TC-059",
+      "no": 65,
+      "tcId": "TC-065",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "NF-05",
@@ -868,7 +952,7 @@
       "pre": "분당 20회 제한 · 순차 호출",
       "input": "25회 연속 호출",
       "expected": "20회 통과 후 429 반환",
-      "actual": "25회 중 통과=8 차단=17 (10596ms)",
+      "actual": "25회 중 통과=19 차단=6 (27973ms)",
       "result": "PASS"
     }
   ]
