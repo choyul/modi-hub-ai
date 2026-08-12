@@ -22,14 +22,20 @@ const WINDOW_MS = 60 * 60 * 1000;   // 1시간
 const MAX_PER_WINDOW = 5;           // IP당 시간당 5계정
 const hits = new Map<string, number[]>();
 
+// 한도는 '실제로 만들어진 계정' 기준으로 센다. 형식 오류·중복 시도는 계정을
+// 만들지 않으므로 세지 않는다 — 실패 시도까지 세면 검증(400·409) 몇 번에
+// 한도가 소진되어 정작 가입하려는 사람이 막힌다.
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const arr = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (arr.length >= MAX_PER_WINDOW) { hits.set(ip, arr); return true; }
-  arr.push(now);
+  hits.set(ip, arr);
+  return arr.length >= MAX_PER_WINDOW;
+}
+function countSignup(ip: string) {
+  const arr = hits.get(ip) ?? [];
+  arr.push(Date.now());
   hits.set(ip, arr);
   if (hits.size > 5000) hits.clear();
-  return false;
 }
 
 export default async function handler(req: any, res: any) {
@@ -75,6 +81,7 @@ export default async function handler(req: any, res: any) {
       throw new Error(error.message);
     }
 
+    countSignup(ip);
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('가입 실패:', err);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
 import {
-  findSpace, capacityLabel, feeLabel, leadDaysLabel, bookingOf, trustLabel, canApply,
+  findSpace, capacityLabel, feeLabel, leadDaysLabel, bookingOf, canApply,
 } from '../../lib/space';
 import SpacePhoto from '../../components/SpacePhoto';
 
@@ -100,24 +100,10 @@ export default function SpaceDetail() {
                 {space.facility} · {space.floor}
               </span>
               <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded">{space.category}</span>
-              <span className={`px-2 py-0.5 rounded font-bold ${
-                (space as any).verified ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-              }`}>
-                {trustLabel(space)}
-              </span>
-              {(space as any).as_of && (
-                <span className="text-slate-400">기준일 {(space as any).as_of}</span>
-              )}
             </div>
 
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">{space.name}</h1>
             {space.specialty && <p className="text-slate-500 mb-5">{space.specialty}</p>}
-
-            {(space as any).source && (
-              <p className="text-[12px] text-slate-400 mb-5 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
-                출처 — {(space as any).source}
-              </p>
-            )}
 
             {/* 스펙 표 */}
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 border border-slate-200 rounded-xl divide-y sm:divide-y-0 divide-slate-100 mb-4 overflow-hidden">

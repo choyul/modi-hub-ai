@@ -68,20 +68,8 @@ export default function UserSpaces() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">공간 안내</h1>
           <p className="text-slate-500 mt-2">
-            봉화군에 등록된 {spacesData.spaces.length}개 공간입니다. 조건으로 좁혀 볼 수 있습니다.
+            원하는 공간을 찾아 바로 예약을 신청하세요.
           </p>
-
-          {/* 데이터 출처를 화면에 그대로 쓴다 — 어디까지가 확인된 정보인지 이용자가 알아야 한다 */}
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12.5px] text-slate-600 leading-relaxed">
-            <span className="material-symbols-outlined text-[15px] text-slate-400 align-middle mr-1" aria-hidden="true">
-              info
-            </span>
-            준공(2026.11.29) 전 계획 단계로, 표시된 값은 계획 기준입니다.
-            아직 확정되지 않은 항목은 「확인 필요」로 안내합니다.
-            <span className="block mt-1 text-slate-400">
-              이 화면은 AI를 사용하지 않고 등록된 정보를 조건으로 보여드립니다.
-            </span>
-          </div>
         </div>
 
         {/* 조건 — 용도·시설·인원 (구 「조건조회」가 하던 일) */}
@@ -141,9 +129,7 @@ export default function UserSpaces() {
           </label>
         </div>
 
-        <p className="text-xs text-slate-400 mb-6">
-          {rows.length}건 · 「확인 필요」는 아직 확정되지 않아 비워 둔 항목입니다.
-        </p>
+        <p className="text-xs text-slate-400 mb-6">전체 {rows.length}개 공간</p>
 
         {/* 0건 상태 */}
         {rows.length === 0 && (
@@ -152,10 +138,7 @@ export default function UserSpaces() {
               search_off
             </span>
             <h2 className="font-bold text-slate-800 mb-1">조건에 맞는 공간이 없습니다</h2>
-            <p className="text-sm text-slate-500 mb-5">
-              봉화에 이런 공간이 없다는 뜻입니다. 검색으로 알려 주세요 — 없는 공간을 찾은
-              기록이 다음 유휴공간 활용의 근거가 됩니다.
-            </p>
+            <p className="text-sm text-slate-500 mb-5">조건을 바꾸거나 검색으로 찾아보세요.</p>
             <div className="flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setParams({}, { replace: true })}
@@ -168,7 +151,7 @@ export default function UserSpaces() {
                   `${category === 'all' ? '' : category + ' '}공간을 찾고 있어요`)}`)}
                 className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-bold text-sm"
               >
-                검색으로 알려 주기
+                검색으로 찾아보기
               </button>
             </div>
           </div>
@@ -215,7 +198,7 @@ export default function UserSpaces() {
                       to={`/spaces/${space.id}`}
                       className="block text-center w-full py-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl text-sm font-bold transition-colors"
                     >
-                      상세보기
+                      예약하기
                     </Link>
                   </div>
                 </div>

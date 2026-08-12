@@ -154,12 +154,12 @@ console.log('\n▸ G 게스트 — 찾기의 흐름');
 }
 
 {
-  const { status, body } = await api('/api/notify', {
+  const { status } = await api('/api/notify', {
     method: 'POST', body: JSON.stringify({ spaceId: 'GL7', contact: 'qa-guest@test.modi' }) });
   T({ persona: 'P2 이수진(34·워킹맘)', role: 'G', feature: 'UD-08', area: '개관알림',
-      title: '개관 전 숙소에 알림 신청을 남긴다',
-      pre: 'GL7 게스트하우스 = ota/pending', input: 'spaceId=GL7 + 연락처',
-      expected: '200 접수' }, status === 200, `HTTP ${status} ${body?.error ?? ''}`);
+      title: '운영 중인 공간은 개관알림 대상이 아니다',
+      pre: '전 공간 운영 중(live) — 개관 예정 공간 없음', input: 'spaceId=GL7',
+      expected: '409 거절' }, status === 409, `HTTP ${status}`);
 }
 
 {
@@ -298,28 +298,35 @@ let revId = null;
 {
   const { status, body } = await api('/api/reservation', { method: 'POST', headers: authH,
     body: JSON.stringify({ spaceId: 'GL7', useDate: '2026-12-24', headcount: 2 }) });
-  T({ persona: 'P2 이수진(34·워킹맘)', role: 'U', feature: 'BK-08', area: '채널가드',
-      title: '외부(OTA) 예약 숙소는 이 시스템에서 신청받지 않는다',
-      pre: 'GL7 = ota/pending', input: 'spaceId=GL7',
-      expected: '409 + 야놀자·여기어때·에어비앤비 안내' },
-    status === 409, `HTTP ${status} · ${body?.error}`);
+  const stayId = body?.reservation?.id;
+  T({ persona: 'P2 이수진(34·워킹맘)', role: 'U', feature: 'BK-01', area: '대관신청',
+      title: '숙박도 온라인으로 신청된다 (전 공간 개방)',
+      pre: 'GL7 = self/live · 60,000원/1박', input: '12/24 · 2명',
+      expected: '200 · 승인대기' },
+    status === 200 && body?.reservation?.status === '승인대기', `HTTP ${status} · ${stayId}`);
+  if (stayId) await api('/api/reservation', { method: 'DELETE', headers: authH,
+    body: JSON.stringify({ id: stayId }) });
 }
 {
   const { status, body } = await api('/api/reservation', { method: 'POST', headers: authH,
-    body: JSON.stringify({ spaceId: 'HO1', useDate: '2026-09-20', headcount: 4 }) });
-  T({ persona: 'P4 최영수(45·공무원)', role: 'U', feature: 'BK-04', area: '채널가드',
-      title: '이용조건 미확인 공간은 신청을 막고 사유를 밝힌다',
-      pre: 'HO1 해오름 1층 = unknown (자료 없음)', input: 'spaceId=HO1',
-      expected: '409 + "확인되지 않아" 사유' },
-    status === 409 && /확인/.test(body?.error ?? ''), `HTTP ${status} · ${body?.error}`);
+    body: JSON.stringify({ spaceId: 'ZZ99', useDate: '2026-09-20', headcount: 4 }) });
+  T({ persona: 'P4 최영수(45·공무원)', role: 'U', feature: 'BK-04', area: '입력검증',
+      title: '존재하지 않는 공간은 신청되지 않는다',
+      pre: '없음', input: 'spaceId=ZZ99',
+      expected: '400' }, status === 400, `HTTP ${status} · ${body?.error}`);
 }
 {
   const { status, body } = await api('/api/reservation', { method: 'POST', headers: authH,
-    body: JSON.stringify({ spaceId: 'GL4', useDate: '2026-09-20', headcount: 2 }) });
-  T({ persona: 'P3 박준호(29·모바일)', role: 'U', feature: 'BK-08', area: '채널가드',
-      title: '예약 없이 방문하는 공간은 신청 대상이 아니다',
-      pre: 'GL4 봉화의 작업실 = phone (음료 주문=이용)', input: 'spaceId=GL4',
-      expected: '409 차단' }, status === 409, `HTTP ${status} · ${(body?.error ?? '').slice(0, 60)}`);
+    body: JSON.stringify({ spaceId: 'GL4', useDate: '2026-09-20', headcount: 12,
+      purpose: '단체 이용 (QA)' }) });
+  const gid = body?.reservation?.id;
+  T({ persona: 'P3 박준호(29·모바일)', role: 'U', feature: 'BK-01', area: '대관신청',
+      title: '작업실 단체 이용도 온라인으로 신청된다',
+      pre: 'GL4 = self/live · 단체는 온라인 신청', input: '12명',
+      expected: '200 · 승인대기' },
+    status === 200 && body?.reservation?.status === '승인대기', `HTTP ${status} · ${gid}`);
+  if (gid) await api('/api/reservation', { method: 'DELETE', headers: authH,
+    body: JSON.stringify({ id: gid }) });
 }
 {
   const { status, body } = await api('/api/reservation', { method: 'POST', headers: authH,
@@ -386,12 +393,15 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
     cats.join(', '));
 }
 {
+  // 2026-08-13 요구 변경: 시스템 자기설명 문구('AI 미사용', '계획값' 고지)를
+  // 사용자 요청으로 제거 — 일반 예약 서비스 톤. 검증도 반대로 뒤집는다.
   const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8');
+  const clean = !src.includes('AI를 사용하지') && !src.includes('확인 필요」로 안내');
   T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07·G1', area: 'UX',
-      title: '이 화면은 AI를 쓰지 않는다고 명시되어 있다',
+      title: '목록 화면에 시스템 자기설명 문구가 없다 (예약 서비스 톤)',
       pre: '/spaces', input: '화면 문구',
-      expected: '"AI를 사용하지 않습니다" 고지 존재' },
-    src.includes('AI를 사용하지 않'), src.includes('AI를 사용하지 않') ? '고지 문구 확인' : '문구 없음');
+      expected: 'AI 미사용·계획값 고지 문구 제거됨' }, clean,
+    clean ? '방어적 문구 없음 확인' : '문구 잔존');
 }
 {
   // 통합의 핵심 — 공무원에게 필요했던 '조건 여러 개'가 한 화면에 있는가
@@ -446,10 +456,10 @@ let stats = null;
     `무LLM ${body?.summary?.noLlmRate}% · ${(body?.answeredBy ?? []).map((a) => `${a.label}:${a.count}`).join(' ')}`);
 
   T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-14', area: '집계',
-      title: '개관 대기자 수를 공간별로 본다',
-      pre: 'GL7 알림 신청됨', input: 'notifyWaiters',
-      expected: '1명 이상' }, (body?.summary?.notifyWaiters ?? 0) > 0,
-    `${body?.summary?.notifyWaiters}명 · ${(body?.notifyWaitersBySpace ?? []).map((n) => n.label).join(',')}`);
+      title: '개관 대기자 수가 집계된다 (현재 개관 예정 공간 없음 → 0명)',
+      pre: '전 공간 운영 중', input: 'notifyWaiters',
+      expected: '숫자 산출' }, typeof body?.summary?.notifyWaiters === 'number',
+    `${body?.summary?.notifyWaiters}명 대기`);
 
   T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-13', area: '집계',
       title: '이탈 사유가 집계된다',
@@ -529,11 +539,12 @@ let stats = null;
 {
   const { status, body } = await api('/api/admin-spaces', {
     method: 'PATCH', headers: adminH,
-    body: JSON.stringify({ id: 'HO1', patch: { booking_channel: 'self' } }),
+    body: JSON.stringify({ id: 'HO1', patch: { booking_channel: 'self',
+      reservation_method: '', capacity_max: '' } }),
   });
   T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11·BK-08', area: '입력검증',
       title: '예약방법·정원 없이 온라인 신청을 열 수 없다',
-      pre: 'HO1 = 조건 미확인', input: 'booking_channel=self 만 지정',
+      pre: '교차 검증', input: 'self 유지 + 예약방법·정원 비움',
       expected: '400 + 사유 안내' }, status === 400,
     `HTTP ${status} · ${(body?.error ?? '').slice(0, 60)}`);
 }

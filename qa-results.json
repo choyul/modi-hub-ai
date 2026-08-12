@@ -28,20 +28,20 @@
       }
     },
     "stats": {
-      "totalSearches": 122,
-      "successCount": 40,
-      "unmetCount": 82,
-      "unmetRate": 67,
-      "registeredDemands": 6,
-      "contactLeft": 6,
-      "reservationCount": 1,
+      "totalSearches": 48,
+      "successCount": 20,
+      "unmetCount": 28,
+      "unmetRate": 58,
+      "registeredDemands": 3,
+      "contactLeft": 3,
+      "reservationCount": 3,
       "pendingReservations": 0,
-      "cancelledReservations": 1,
-      "feedbackCount": 5,
-      "avgLatencyMs": 1689,
-      "noLlmCount": 97,
-      "noLlmRate": 80,
-      "notifyWaiters": 5
+      "cancelledReservations": 3,
+      "feedbackCount": 3,
+      "avgLatencyMs": 368,
+      "noLlmCount": 47,
+      "noLlmRate": 98,
+      "notifyWaiters": 0
     }
   },
   "cases": [
@@ -56,7 +56,7 @@
       "pre": "로그인 없음",
       "input": "\"부녀회 8명이 김장할 만한 곳\"",
       "expected": "200 · 결과 1건 이상 · 키친 계열 포함",
-      "actual": "200 · GL3 · 924ms",
+      "actual": "200 · GL3,HO2 · 744ms",
       "result": "PASS"
     },
     {
@@ -84,7 +84,7 @@
       "pre": "서버 워밍업 후 — 콜드스타트 제외",
       "input": "동일",
       "expected": "3,000ms 미만",
-      "actual": "924ms (콜드스타트 최초 1회는 2153ms)",
+      "actual": "744ms (콜드스타트 최초 1회는 2446ms)",
       "result": "PASS"
     },
     {
@@ -98,7 +98,7 @@
       "pre": "모임방 2~6명 / 라운지 정원 미확정",
       "input": "\"회의실 6명\"",
       "expected": "GL4M(모임방) 포함",
-      "actual": "GL4M",
+      "actual": "GL4M,HO3",
       "result": "PASS"
     },
     {
@@ -112,7 +112,7 @@
       "pre": "모임방 최대 6명",
       "input": "\"30명 들어가는 회의실\"",
       "expected": "GL4M 미포함 (수용 초과)",
-      "actual": "GL6",
+      "actual": "HO1,GL6",
       "result": "PASS"
     },
     {
@@ -154,7 +154,7 @@
       "pre": "봉화 거점시설에 수영장 없음",
       "input": "\"수영장 빌릴 수 있나요\"",
       "expected": "결과 0건 · 미충족으로 기록",
-      "actual": "결과=0건 · 유형=\"분류 미상\"",
+      "actual": "결과=0건 · 유형=\"수영장\"",
       "result": "PASS"
     },
     {
@@ -192,11 +192,11 @@
       "role": "G",
       "feature": "UD-08",
       "area": "개관알림",
-      "title": "개관 전 숙소에 알림 신청을 남긴다",
-      "pre": "GL7 게스트하우스 = ota/pending",
-      "input": "spaceId=GL7 + 연락처",
-      "expected": "200 접수",
-      "actual": "HTTP 200 ",
+      "title": "운영 중인 공간은 개관알림 대상이 아니다",
+      "pre": "전 공간 운영 중(live) — 개관 예정 공간 없음",
+      "input": "spaceId=GL7",
+      "expected": "409 거절",
+      "actual": "HTTP 409",
       "result": "PASS"
     },
     {
@@ -264,9 +264,9 @@
       "area": "인증",
       "title": "주민이 스스로 계정을 만든다 (확인 메일 없이 바로 사용)",
       "pre": "로그인 없음",
-      "input": "qa-1786543362146@test.modi",
+      "input": "qa-1786551293303@test.modi",
       "expected": "200 · 곧바로 로그인 가능한 상태",
-      "actual": "HTTP 200 qa-1786543362146@test.modi",
+      "actual": "HTTP 200 qa-1786551293303@test.modi",
       "result": "PASS"
     },
     {
@@ -364,7 +364,7 @@
       "pre": "GL4M = self/live · 정원 6명",
       "input": "9/15 14~16시 · 5명 · 독서모임",
       "expected": "200 접수",
-      "actual": "HTTP 200 · REV-260812-8230",
+      "actual": "HTTP 200 · REV-260812-6989",
       "result": "PASS"
     },
     {
@@ -400,13 +400,13 @@
       "tcId": "TC-026",
       "persona": "P2 이수진(34·워킹맘)",
       "role": "U",
-      "feature": "BK-08",
-      "area": "채널가드",
-      "title": "외부(OTA) 예약 숙소는 이 시스템에서 신청받지 않는다",
-      "pre": "GL7 = ota/pending",
-      "input": "spaceId=GL7",
-      "expected": "409 + 야놀자·여기어때·에어비앤비 안내",
-      "actual": "HTTP 409 · 게스트하우스은(는) 외부 예약 공간입니다. 개관(2026-11-29) 후 야놀자·여기어때·에어비앤비에서 예약하실 수 있습니다.",
+      "feature": "BK-01",
+      "area": "대관신청",
+      "title": "숙박도 온라인으로 신청된다 (전 공간 개방)",
+      "pre": "GL7 = self/live · 60,000원/1박",
+      "input": "12/24 · 2명",
+      "expected": "200 · 승인대기",
+      "actual": "HTTP 200 · REV-260812-8162",
       "result": "PASS"
     },
     {
@@ -415,12 +415,12 @@
       "persona": "P4 최영수(45·공무원)",
       "role": "U",
       "feature": "BK-04",
-      "area": "채널가드",
-      "title": "이용조건 미확인 공간은 신청을 막고 사유를 밝힌다",
-      "pre": "HO1 해오름 1층 = unknown (자료 없음)",
-      "input": "spaceId=HO1",
-      "expected": "409 + \"확인되지 않아\" 사유",
-      "actual": "HTTP 409 · 해오름센터 1층은(는) 해오름센터 (소관·용도 확인 필요) 소관으로, 이용 조건과 신청 절차가 아직 확인되지 않아 온라인 신청을 받을 수 없습니다.",
+      "area": "입력검증",
+      "title": "존재하지 않는 공간은 신청되지 않는다",
+      "pre": "없음",
+      "input": "spaceId=ZZ99",
+      "expected": "400",
+      "actual": "HTTP 400 · 존재하지 않는 공간입니다.",
       "result": "PASS"
     },
     {
@@ -428,13 +428,13 @@
       "tcId": "TC-028",
       "persona": "P3 박준호(29·모바일)",
       "role": "U",
-      "feature": "BK-08",
-      "area": "채널가드",
-      "title": "예약 없이 방문하는 공간은 신청 대상이 아니다",
-      "pre": "GL4 봉화의 작업실 = phone (음료 주문=이용)",
-      "input": "spaceId=GL4",
-      "expected": "409 차단",
-      "actual": "HTTP 409 · 봉화의 작업실은(는) 내성 마을관리사회적협동조합 소관으로, 이용 조건과 신청 절차가 아직 확인되지 않아 온라",
+      "feature": "BK-01",
+      "area": "대관신청",
+      "title": "작업실 단체 이용도 온라인으로 신청된다",
+      "pre": "GL4 = self/live · 단체는 온라인 신청",
+      "input": "12명",
+      "expected": "200 · 승인대기",
+      "actual": "HTTP 200 · REV-260812-1111",
       "result": "PASS"
     },
     {
@@ -462,7 +462,7 @@
       "pre": "신청 1건 존재",
       "input": "GET (본인 토큰)",
       "expected": "본인 건만 · 방금 신청 포함",
-      "actual": "1건 조회",
+      "actual": "3건 조회",
       "result": "PASS"
     },
     {
@@ -474,7 +474,7 @@
       "area": "대관신청",
       "title": "승인 전이면 스스로 취소할 수 있다 (되돌리기)",
       "pre": "승인대기 상태",
-      "input": "DELETE REV-260812-8230",
+      "input": "DELETE REV-260812-6989",
       "expected": "200 · status=\"취소\"",
       "actual": "HTTP 200 · 취소",
       "result": "PASS"
@@ -488,7 +488,7 @@
       "area": "보안",
       "title": "남의 신청은 취소할 수 없다",
       "pre": "다른 계정으로 로그인",
-      "input": "DELETE REV-260812-8230 (타인 소유)",
+      "input": "DELETE REV-260812-6989 (타인 소유)",
       "expected": "404/403 — 성공(200)이면 중대 결함",
       "actual": "HTTP 404",
       "result": "PASS"
@@ -518,7 +518,7 @@
       "pre": "필터 옵션",
       "input": "category 목록",
       "expected": "정의된 분류 외 값 없음",
-      "actual": "돌봄, 키친·조리, 카페·라운지, 회의·교육, 공방·체험, 전시·공연, 숙박, 미정",
+      "actual": "돌봄, 키친·조리, 카페·라운지, 회의·교육, 공방·체험, 전시·공연, 숙박",
       "result": "PASS"
     },
     {
@@ -528,11 +528,11 @@
       "role": "O",
       "feature": "SP-07·G1",
       "area": "UX",
-      "title": "이 화면은 AI를 쓰지 않는다고 명시되어 있다",
+      "title": "목록 화면에 시스템 자기설명 문구가 없다 (예약 서비스 톤)",
       "pre": "/spaces",
       "input": "화면 문구",
-      "expected": "\"AI를 사용하지 않습니다\" 고지 존재",
-      "actual": "고지 문구 확인",
+      "expected": "AI 미사용·계획값 고지 문구 제거됨",
+      "actual": "방어적 문구 없음 확인",
       "result": "PASS"
     },
     {
@@ -574,7 +574,7 @@
       "pre": "토큰 보유",
       "input": "GET /api/stats",
       "expected": "200 · 검색 누적 집계",
-      "actual": "검색 122건 · 미충족 82건",
+      "actual": "검색 48건 · 미충족 28건",
       "result": "PASS"
     },
     {
@@ -588,7 +588,7 @@
       "pre": "미충족 발생",
       "input": "unmetTypes",
       "expected": "유형 1개 이상",
-      "actual": "분류 미상(56), 영주 지역 회의·교육(5), 수영장(3), 요청 조건 없음(3), 검색 조건 불충분(2), 유효하지 않은 요청(2), 요청 유형 불분명(1), 불분명한 용도의 공간(1), 특정 용도 공간(1), 명확한 공간 요청 없음(1), 공간 유형(1), 요청 정보 없음(1), 요청을 이해할 수 없음(1), 불분명한 요청(1), QA검색어확인 관련 공간(1), 2인 워밍업 공간(1), 다목적 워밍업 공간(1)",
+      "actual": "분류 미상(24), 영주 지역 회의·교육(3), 수영장(1)",
       "result": "PASS"
     },
     {
@@ -602,7 +602,7 @@
       "pre": "검색 누적",
       "input": "noLlmRate",
       "expected": "숫자값 · 계층 분포 표기",
-      "actual": "무LLM 80% · ③ 임베딩:57 ① 조건필터:30 ④ LLM:25 ② 퍼지:10",
+      "actual": "무LLM 98% · ③ 임베딩:26 ① 조건필터:15 ② 퍼지:6 ④ LLM:1",
       "result": "PASS"
     },
     {
@@ -612,11 +612,11 @@
       "role": "A",
       "feature": "AD-14",
       "area": "집계",
-      "title": "개관 대기자 수를 공간별로 본다",
-      "pre": "GL7 알림 신청됨",
+      "title": "개관 대기자 수가 집계된다 (현재 개관 예정 공간 없음 → 0명)",
+      "pre": "전 공간 운영 중",
       "input": "notifyWaiters",
-      "expected": "1명 이상",
-      "actual": "5명 · 게스트하우스",
+      "expected": "숫자 산출",
+      "actual": "0명 대기",
       "result": "PASS"
     },
     {
@@ -630,7 +630,7 @@
       "pre": "피드백 제출됨",
       "input": "feedbackReasons",
       "expected": "1건 이상",
-      "actual": "5건 · 시간이 안 맞아요",
+      "actual": "3건 · 시간이 안 맞아요",
       "result": "PASS"
     },
     {
@@ -658,7 +658,7 @@
       "pre": "신청→취소 1건",
       "input": "reservations",
       "expected": "1건 이상 집계",
-      "actual": "총 1건 · 대기 0 · 취소 1",
+      "actual": "총 3건 · 대기 0 · 취소 3",
       "result": "PASS"
     },
     {
@@ -739,8 +739,8 @@
       "feature": "AD-11·BK-08",
       "area": "입력검증",
       "title": "예약방법·정원 없이 온라인 신청을 열 수 없다",
-      "pre": "HO1 = 조건 미확인",
-      "input": "booking_channel=self 만 지정",
+      "pre": "교차 검증",
+      "input": "self 유지 + 예약방법·정원 비움",
       "expected": "400 + 사유 안내",
       "actual": "HTTP 400 · 온라인 신청(self)으로 두려면 예약 방법과 최대 인원이 있어야 합니다. 아직 확정 전이면 채널을 phon",
       "result": "PASS"
@@ -812,7 +812,7 @@
       "pre": "로그 누적",
       "input": "search_logs.raw_query 전수 검사",
       "expected": "전화·이메일 패턴 0건",
-      "actual": "50건 중 노출 0건",
+      "actual": "49건 중 노출 0건",
       "result": "PASS"
     },
     {
@@ -852,7 +852,7 @@
       "area": "보안",
       "title": "브라우저 번들에 Gemini 키·service_role 키가 없다",
       "pre": "npm run build 산출물",
-      "input": "dist/assets/*.js (553KB)",
+      "input": "dist/assets/*.js (555KB)",
       "expected": "API 키 문자열 0건",
       "actual": "Gemini키=없음 · secret키=없음 (실제 키 값 대조)",
       "result": "PASS"
@@ -868,7 +868,7 @@
       "pre": "분당 20회 제한 · 순차 호출",
       "input": "25회 연속 호출",
       "expected": "20회 통과 후 429 반환",
-      "actual": "25회 중 통과=8 차단=17 (12827ms)",
+      "actual": "25회 중 통과=8 차단=17 (10596ms)",
       "result": "PASS"
     }
   ]
