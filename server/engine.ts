@@ -162,7 +162,23 @@ async function layerEmbedding(spaces: DbSpace[], query: string) {
     .filter((s) => bookable(s) && s.embedding)
     .map((s) => ({ s, sim: cosine(qv, s.embedding!) }))
     .sort((a, b) => b.sim - a.sim);
-  return { hits: scored.filter((x) => x.sim >= 0.62).slice(0, 3), available: true, top: scored.slice(0, 2) };
+  // 채택 규칙 두 가지 — 절대 유사도와 '격차'를 함께 본다.
+  //
+  // 평가셋(QA-01) 실측:
+  //   "돌잔치 할 만한 넓은 공간" → GL6 0.6757 / 2위 0.6219  (격차 0.054)
+  //   "볼링장이나 당구장"        → 1위 0.6471 / 2위 0.6451  (격차 0.002)
+  //   "수영장 빌릴 수 있나요"     → 1위 0.5830
+  //
+  // 보유하지 않은 시설을 물으면 모든 공간이 고만고만하게 비슷해진다. 즉
+  // '1위 점수'보다 '1위가 나머지를 얼마나 앞서는가'가 진짜 신호다. 절대 임계만
+  // 쓰면 임계값을 20건에 맞춰 깎는 과적합이 되므로 격차 조건을 함께 건다.
+  //
+  // ※ 두 수치 모두 20건 평가셋에 기대어 정한 값이다. 질의가 쌓이면 재산정해야 한다.
+  const MIN_SIM = 0.66;      // 절대 유사도 하한
+  const MIN_LEAD = 0.02;     // 1위가 2위를 앞서야 하는 최소 격차
+  const lead = scored.length > 1 ? scored[0].sim - scored[1].sim : 1;
+  const hits = lead < MIN_LEAD ? [] : scored.filter((x) => x.sim >= MIN_SIM).slice(0, 3);
+  return { hits, available: true, top: scored.slice(0, 2) };
 }
 
 // ── 결과 조립 ───────────────────────────────────────────────
@@ -222,7 +238,11 @@ export async function searchSpaces(query: string): Promise<EngineResult> {
 
   // 야간 질의 가드 — 데이터에 운영시간이 없어 ①~③은 "밤에 되는지"를 알 수 없다.
   // 확신하면 거짓말이 되므로, 시간 제약 질의는 ④(LLM)의 판단으로 넘긴다.
-  const nightQuery = /밤|야간|새벽|심야|밤새/.test(query);
+  // 야간 '이용' 질의 — 밤에 공간을 쓰겠다는 뜻. 조건필터가 낮 기준으로만
+  // 판단하므로 여기서 걸러 미충족으로 보낸다.
+  // 단 "하룻밤 묵을" 류는 숙박 질의이지 야간이용 질의가 아니다. 숙박으로
+  // 분류된 질의는 제외한다 — 이 구분이 없으면 숙소 검색이 통째로 미충족이 된다.
+  const nightQuery = /밤|야간|새벽|심야|밤새/.test(query) && p.category !== '숙박';
 
   // ① 조건 필터
   const f = layerFilter(spaces, p);

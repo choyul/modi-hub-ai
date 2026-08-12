@@ -1,0 +1,797 @@
+{
+  "set": 20,
+  "A": {
+    "hit": 20,
+    "hitRate": 1,
+    "precision": 0.975,
+    "recall": 1,
+    "f1": 0.9873417721518987,
+    "avgMs": 110,
+    "n": 20,
+    "blocked": 0
+  },
+  "B": {
+    "hit": 0,
+    "hitRate": 0,
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "avgMs": 0,
+    "n": 0,
+    "blocked": 20
+  },
+  "H": {
+    "n": 10,
+    "hit": 10,
+    "hitRate": 1,
+    "precision": 0.95,
+    "recall": 1,
+    "f1": 0.9743589743589743,
+    "avgMs": 131,
+    "llmCalls": 0
+  },
+  "llmCalls": 0,
+  "byLayer": {
+    "filter": {
+      "n": 15,
+      "hit": 15
+    },
+    "embedding": {
+      "n": 3,
+      "hit": 3
+    },
+    "fuzzy": {
+      "n": 2,
+      "hit": 2
+    }
+  },
+  "rows": [
+    {
+      "no": 1,
+      "query": "부녀회 8명이 김장할 공간 있을까요?",
+      "truth": [
+        "GL3"
+      ],
+      "kind": "평이·목적",
+      "basis": "3F 센트럴 키친 = 식품 제조가공 거점 (계획서 Ⅲ-3F)",
+      "truthStr": "GL3",
+      "a": {
+        "pred": "GL3",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 830,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 2,
+      "query": "6명이 회의할 수 있는 방",
+      "truth": [
+        "GL4M",
+        "GL6"
+      ],
+      "kind": "평이·조건",
+      "basis": "4F 모임방 6석 / 6F 주민라운지 다목적 대관",
+      "truthStr": "GL4M,GL6",
+      "a": {
+        "pred": "GL4M,GL6",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 1,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 3,
+      "query": "노트북 들고 조용히 일할 곳",
+      "truth": [
+        "GL4"
+      ],
+      "kind": "평이·목적",
+      "basis": "4F 봉화의 작업실 = 정숙 구역 · 콘센트·개별조명",
+      "truthStr": "GL4",
+      "a": {
+        "pred": "GL4",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 4,
+      "query": "공예 체험 해보고 싶어요",
+      "truth": [
+        "GL5"
+      ],
+      "kind": "평이·목적",
+      "basis": "5F 작가 공방·체험실 = 비식품 공예·미술·사진 체험",
+      "truthStr": "GL5",
+      "a": {
+        "pred": "GL5",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 1,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 5,
+      "query": "하룻밤 묵을 곳",
+      "truth": [
+        "GL7"
+      ],
+      "kind": "평이·목적",
+      "basis": "7F 게스트하우스 (개관 전이나 공간으로는 존재)",
+      "truthStr": "GL7",
+      "a": {
+        "pred": "GL7",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 6,
+      "query": "전시 보러 갈 만한 곳",
+      "truth": [
+        "GL5G"
+      ],
+      "kind": "평이·목적",
+      "basis": "5F 작가 전시·판매실 = 상시 개방·관람 무료",
+      "truthStr": "GL5G",
+      "a": {
+        "pred": "GL5G",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 7,
+      "query": "어르신 돌봄 프로그램 하는 데",
+      "truth": [
+        "GL2"
+      ],
+      "kind": "평이·목적",
+      "basis": "2F 다함께 노인돌봄센터",
+      "truthStr": "GL2",
+      "a": {
+        "pred": "GL2",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 8,
+      "query": "돌잔치 할 만한 넓은 공간",
+      "truth": [
+        "GL6"
+      ],
+      "kind": "중간·유추",
+      "basis": "6F 주민라운지 — 계획서에 돌잔치·소규모 축하연 명시",
+      "truthStr": "GL6",
+      "a": {
+        "pred": "GL6",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 390,
+        "layer": "embedding",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 9,
+      "query": "스터디 모임 3명이서",
+      "truth": [
+        "GL4M"
+      ],
+      "kind": "중간·조건",
+      "basis": "4F 모임방 = 대화 가능한 유일 구역, 2~6명",
+      "truthStr": "GL4M",
+      "a": {
+        "pred": "GL4M,GL6",
+        "hit": true,
+        "precision": 0.5,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 10,
+      "query": "밀키트 만드는 주방 빌릴 수 있나요",
+      "truth": [
+        "GL3"
+      ],
+      "kind": "중간·용어",
+      "basis": "3F CK = 밀키트 제조·위탁판매",
+      "truthStr": "GL3",
+      "a": {
+        "pred": "GL3",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 11,
+      "query": "봉하의 자겁실",
+      "truth": [
+        "GL4"
+      ],
+      "kind": "어려움·오타",
+      "basis": "\"봉화의 작업실\" 오타 (자모 2곳 변형)",
+      "truthStr": "GL4",
+      "a": {
+        "pred": "GL4",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 2,
+        "layer": "fuzzy",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 12,
+      "query": "게스트하우쓰",
+      "truth": [
+        "GL7"
+      ],
+      "kind": "어려움·오타",
+      "basis": "\"게스트하우스\" 오타",
+      "truthStr": "GL7",
+      "a": {
+        "pred": "GL7",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 2,
+        "layer": "fuzzy",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 13,
+      "query": "애들 데리고 뭐 만들기 하는 거",
+      "truth": [
+        "GL5"
+      ],
+      "kind": "어려움·구어체",
+      "basis": "체험 프로그램 — 키워드 사전에 없는 표현",
+      "truthStr": "GL5",
+      "a": {
+        "pred": "GL5",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 14,
+      "query": "커피 마시면서 책 읽을 데 없나",
+      "truth": [
+        "GL4"
+      ],
+      "kind": "어려움·구어체",
+      "basis": "4F = 음료 제공 + 책장(F구역) + 독서",
+      "truthStr": "GL4",
+      "a": {
+        "pred": "GL4",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 15,
+      "query": "세미나 열 장소가 필요합니다",
+      "truth": [
+        "GL6",
+        "GL4M"
+      ],
+      "kind": "중간·유추",
+      "basis": "6F 세미나↔연회 전환 / 4F 모임방 소회의",
+      "truthStr": "GL6,GL4M",
+      "a": {
+        "pred": "GL4M,GL6",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 16,
+      "query": "20명 단체 공예 수업",
+      "truth": [
+        "GL5"
+      ],
+      "kind": "어려움·복합조건",
+      "basis": "5F 체험실 단체 20명 시 34㎡ (계획서 5-10 B구역)",
+      "truthStr": "GL5",
+      "a": {
+        "pred": "GL5",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 17,
+      "query": "작가가 작업할 공방 임대",
+      "truth": [
+        "GL5"
+      ],
+      "kind": "어려움·복합조건",
+      "basis": "5F 입주 공방 4실 (관리위탁·제3자 사용수익)",
+      "truthStr": "GL5",
+      "a": {
+        "pred": "GL5",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": false,
+        "precision": 0,
+        "recall": 0,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 18,
+      "query": "수영장 빌릴 수 있나요",
+      "truth": [],
+      "kind": "경계·미보유",
+      "basis": "거점시설에 체육시설 없음 → 0건이 정답",
+      "truthStr": "(0건)",
+      "a": {
+        "pred": "(0건)",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 489,
+        "layer": "embedding",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 19,
+      "query": "영주에 20명 회의실 있나요",
+      "truth": [],
+      "kind": "경계·타지역",
+      "basis": "봉화 데이터만 보유 → 0건 + 정직 안내가 정답",
+      "truthStr": "(0건)",
+      "a": {
+        "pred": "(0건)",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    },
+    {
+      "no": 20,
+      "query": "볼링장이나 당구장",
+      "truth": [],
+      "kind": "경계·미보유",
+      "basis": "해당 시설 없음 → 0건이 정답",
+      "truthStr": "(0건)",
+      "a": {
+        "pred": "(0건)",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 493,
+        "layer": "embedding",
+        "llm": false
+      },
+      "b": {
+        "pred": "[일일 한도 초과(429)]",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "blocked": true,
+        "err": "일일 한도 초과(429)"
+      }
+    }
+  ],
+  "holdout": [
+    {
+      "no": 101,
+      "query": "김치 담글 데",
+      "truth": [
+        "GL3"
+      ],
+      "kind": "홀드아웃",
+      "basis": "3F 센트럴 키친",
+      "truthStr": "GL3",
+      "a": {
+        "pred": "GL3",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      }
+    },
+    {
+      "no": 102,
+      "query": "회의할 데 좀 알려줘",
+      "truth": [
+        "GL4M",
+        "GL6"
+      ],
+      "kind": "홀드아웃",
+      "basis": "4F 모임방 / 6F 라운지",
+      "truthStr": "GL4M,GL6",
+      "a": {
+        "pred": "GL4M,GL6",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      }
+    },
+    {
+      "no": 103,
+      "query": "책 보면서 시간 보낼 곳",
+      "truth": [
+        "GL4"
+      ],
+      "kind": "홀드아웃",
+      "basis": "4F 작업실 — 책장·정숙",
+      "truthStr": "GL4",
+      "a": {
+        "pred": "GL4",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 391,
+        "layer": "embedding",
+        "llm": false
+      }
+    },
+    {
+      "no": 104,
+      "query": "도자기 배우고 싶어요",
+      "truth": [
+        "GL5"
+      ],
+      "kind": "홀드아웃",
+      "basis": "5F 체험 — 도자(성형 공정) 가능 업종",
+      "truthStr": "GL5",
+      "a": {
+        "pred": "GL5",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      }
+    },
+    {
+      "no": 105,
+      "query": "민박 같은 거 있나요",
+      "truth": [
+        "GL7"
+      ],
+      "kind": "홀드아웃",
+      "basis": "7F 게스트하우스",
+      "truthStr": "GL7",
+      "a": {
+        "pred": "GL7",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      }
+    },
+    {
+      "no": 106,
+      "query": "작품 구경하고 살 수 있는 곳",
+      "truth": [
+        "GL5G"
+      ],
+      "kind": "홀드아웃",
+      "basis": "5F 전시·판매실",
+      "truthStr": "GL5G",
+      "a": {
+        "pred": "GL5G,GL5",
+        "hit": true,
+        "precision": 0.5,
+        "recall": 1,
+        "ms": 380,
+        "layer": "embedding",
+        "llm": false
+      }
+    },
+    {
+      "no": 107,
+      "query": "경로당 같은 시설",
+      "truth": [
+        "GL2"
+      ],
+      "kind": "홀드아웃",
+      "basis": "2F 노인돌봄센터",
+      "truthStr": "GL2",
+      "a": {
+        "pred": "GL2",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      }
+    },
+    {
+      "no": 108,
+      "query": "동호회 정기모임 장소",
+      "truth": [
+        "GL6",
+        "GL4M"
+      ],
+      "kind": "홀드아웃",
+      "basis": "6F 동호회 대관 명시",
+      "truthStr": "GL6,GL4M",
+      "a": {
+        "pred": "GL4M,GL6",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 1,
+        "layer": "filter",
+        "llm": false
+      }
+    },
+    {
+      "no": 109,
+      "query": "탁구장 있나요",
+      "truth": [],
+      "kind": "홀드아웃·경계",
+      "basis": "체육시설 미보유 → 0건",
+      "truthStr": "(0건)",
+      "a": {
+        "pred": "(0건)",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 541,
+        "layer": "embedding",
+        "llm": false
+      }
+    },
+    {
+      "no": 110,
+      "query": "안동에 세미나실 있나요",
+      "truth": [],
+      "kind": "홀드아웃·경계",
+      "basis": "타 지역 → 0건",
+      "truthStr": "(0건)",
+      "a": {
+        "pred": "(0건)",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 0,
+        "layer": "filter",
+        "llm": false
+      }
+    }
+  ],
+  "quotaNote": "Gemini 2.5 Flash 무료 티어 = GenerateRequestsPerDayPerProjectPerModel 20건/일. LLM 단독 대조군은 이 한도로 측정 불가."
+}
