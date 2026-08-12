@@ -16,6 +16,7 @@ import UserReservations from './pages/user/UserReservations';
 import UserLogin from './pages/user/UserLogin';
 import NotFound from './pages/misc/NotFound';
 import Privacy from './pages/misc/Privacy';
+import Credits from './pages/misc/Credits';
 import { AuthProvider } from './contexts/AuthContext';
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="reservations" element={<UserReservations />} />
             <Route path="login" element={<UserLogin />} />
             <Route path="privacy" element={<Privacy />} />
+            <Route path="credits" element={<Credits />} />
             {/* PL-11: 잘못된 주소도 안내 화면을 받는다 */}
             <Route path="*" element={<NotFound />} />
           </Route>

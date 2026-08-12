@@ -1,0 +1,66 @@
+{
+  "cafe": {
+    "category": "카페·라운지",
+    "license": "by",
+    "creator": "Wonderlane",
+    "source_page": "https://www.flickr.com/photos/71401718@N00/6696970999",
+    "image_url": "https://live.staticflickr.com/7172/6696970999_ce2dafda2e_b.jpg",
+    "title": "A customer discusses art and business with Lama G, at his coffee shop, goodies, Lama G's Cafe, Fremont, Seattle, Washington, USA"
+  },
+  "meeting": {
+    "category": "회의·교육",
+    "license": "by",
+    "creator": "Engin Erdogan",
+    "source_page": "https://www.flickr.com/photos/33847763@N00/2399205847",
+    "image_url": "https://live.staticflickr.com/3090/2399205847_670be71685_b.jpg",
+    "title": "engage stakeholders in your process. meet early, meet often."
+  },
+  "workshop": {
+    "category": "공방·체험",
+    "license": "by",
+    "creator": "Yuya Tamai",
+    "source_page": "https://www.flickr.com/photos/76758469@N00/7000026637",
+    "image_url": "https://live.staticflickr.com/6211/7000026637_a7cc97dec1_b.jpg",
+    "title": "Ryoji Koie Workshop"
+  },
+  "gallery": {
+    "category": "전시·공연",
+    "license": "by",
+    "creator": "COD Newsroom",
+    "source_page": "https://www.flickr.com/photos/41431665@N07/14489879924",
+    "image_url": "https://live.staticflickr.com/5484/14489879924_36889b9ef2_b.jpg",
+    "title": "'Vivian Maier: Exposed' Opening Reception at Cleve Carney Art Gallery at College of DuPage 41"
+  },
+  "stay": {
+    "category": "숙박",
+    "license": "by",
+    "creator": "Marc Lacoste",
+    "source_page": "https://www.flickr.com/photos/77524592@N00/188121570",
+    "image_url": "https://live.staticflickr.com/68/188121570_9314d2b8b2_b.jpg",
+    "title": "bedroom rectilinear panorama"
+  },
+  "care": {
+    "category": "돌봄",
+    "license": "by",
+    "creator": "Peter Alfred Hess",
+    "source_page": "https://www.flickr.com/photos/22799676@N03/8656467173",
+    "image_url": "https://live.staticflickr.com/8113/8656467173_0dfdb60340_b.jpg",
+    "title": "The New Reading Room"
+  },
+  "default": {
+    "category": "미정·기타",
+    "license": "by",
+    "creator": "TChapman9",
+    "source_page": "https://www.flickr.com/photos/125233660@N05/14989771155",
+    "image_url": "https://live.staticflickr.com/3922/14989771155_86368f7afa_b.jpg",
+    "title": "Office reception area"
+  },
+  "kitchen": {
+    "category": "키친·조리",
+    "license": "cc0",
+    "creator": "Wallboat",
+    "source_page": "https://www.flickr.com/photos/151415985@N06/37296804342",
+    "image_url": "https://live.staticflickr.com/4453/37296804342_42d769f216_b.jpg",
+    "title": "Cooking pies"
+  }
+}

@@ -164,9 +164,14 @@ export default function UserLayout() {
       <footer className="bg-slate-100 border-t border-slate-200 px-6 py-3 text-[11px] text-slate-400 font-medium">
         <div className="flex flex-wrap gap-x-4 gap-y-1 max-w-7xl mx-auto w-full justify-between items-center">
           <span>봉화군 도시계획과 도시재생팀 · 시범 서비스 © 2026</span>
-          <Link to="/privacy" className="hover:text-slate-600 underline underline-offset-2">
-            개인정보 처리 안내
-          </Link>
+          <div className="flex gap-x-4">
+            <Link to="/credits" className="hover:text-slate-600 underline underline-offset-2">
+              이미지 출처
+            </Link>
+            <Link to="/privacy" className="hover:text-slate-600 underline underline-offset-2">
+              개인정보 처리 안내
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
