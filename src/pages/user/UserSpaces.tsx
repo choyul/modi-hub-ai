@@ -26,11 +26,11 @@ export default function UserSpaces() {
   const category = params.get('category') || 'all';
   const facility = params.get('facility') || 'all';
   const headcount = params.get('headcount') || '';
-  const view = params.get('view') === 'table' ? 'table' : 'card';
+  const sort = params.get('sort') || 'default';
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    if (!value || value === 'all') next.delete(key);
+    if (!value || value === 'all' || value === 'default') next.delete(key);
     else next.set(key, value);
     setParams(next, { replace: true });
   };
@@ -41,14 +41,24 @@ export default function UserSpaces() {
 
   const rows = useMemo(() => {
     const n = parseInt(headcount, 10);
-    return spacesData.spaces
+    const list = spacesData.spaces
       .filter((s) => category === 'all' || s.category === category)
       .filter((s) => facility === 'all' || s.facility === facility)
       // 인원 조건은 '확인된 수용인원'이 있는 곳만 판단한다. 값이 없는 곳을
       // 조용히 떨어뜨리면 "없다"로 읽히므로, 모르는 곳은 남겨 두고 표시로 알린다.
-      .filter((s) => !Number.isFinite(n) || s.capacity_max == null || s.capacity_max >= n)
-      .sort((a, b) => (a.capacity_max ?? 9999) - (b.capacity_max ?? 9999));
-  }, [category, facility, headcount]);
+      .filter((s) => !Number.isFinite(n) || s.capacity_max == null || s.capacity_max >= n);
+
+    // 정렬. 수용인원이 '확인 필요'(null)인 곳은 어느 방향으로 정렬하든 맨 뒤로
+    // 보낸다 — 값이 없는 것을 '가장 작다/크다'로 취급하면 오해를 준다.
+    const capAsc = (a: Space, b: Space) => (a.capacity_max ?? Infinity) - (b.capacity_max ?? Infinity);
+    const sorted = [...list];
+    if (sort === 'cap_asc') sorted.sort(capAsc);
+    else if (sort === 'cap_desc') sorted.sort((a, b) =>
+      (b.capacity_max ?? -Infinity) - (a.capacity_max ?? -Infinity));
+    else if (sort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    // default 는 등록(계획서) 순서 그대로 둔다
+    return sorted;
+  }, [category, facility, headcount, sort]);
 
   const filtered = category !== 'all' || facility !== 'all' || headcount !== '';
 
@@ -66,11 +76,10 @@ export default function UserSpaces() {
             <span className="material-symbols-outlined text-[15px] text-slate-400 align-middle mr-1" aria-hidden="true">
               info
             </span>
-            봉화읍 도시재생 거점시설은 <b>준공(2026.11.29) 전 계획값</b>이며 실측 확인 전입니다.
-            노인돌봄센터·해오름센터처럼 <b>소관이 다르거나 용도가 미확정인 곳</b>은 이용 조건이
-            확인되지 않아 「확인 필요」로 표시합니다. 확인되지 않은 값을 임의로 채우지 않습니다.
+            준공(2026.11.29) 전 계획 단계로, 표시된 값은 계획 기준입니다.
+            아직 확정되지 않은 항목은 「확인 필요」로 안내합니다.
             <span className="block mt-1 text-slate-400">
-              이 화면은 AI를 사용하지 않습니다 — 등록된 값을 조건으로 거를 뿐입니다.
+              이 화면은 AI를 사용하지 않고 등록된 정보를 조건으로 보여드립니다.
             </span>
           </div>
         </div>
@@ -110,31 +119,30 @@ export default function UserSpaces() {
 
           {filtered && (
             <button
-              onClick={() => setParams(view === 'table' ? { view: 'table' } : {}, { replace: true })}
+              onClick={() => setParams(sort === 'default' ? {} : { sort }, { replace: true })}
               className="px-3 py-2 text-sm font-bold text-slate-500 hover:text-slate-800"
             >
               조건 지우기
             </button>
           )}
 
-          {/* 보기 전환 — 여러 건을 나란히 비교할 때는 표가 낫다 */}
-          <div className="ml-auto flex gap-1 bg-slate-100 p-1 rounded-lg">
-            {(['card', 'table'] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setParam('view', v === 'card' ? '' : 'table')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                  view === v ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'
-                }`}
-              >
-                {v === 'card' ? '카드' : '표로 보기'}
-              </button>
-            ))}
-          </div>
+          {/* 정렬 */}
+          <label className="flex flex-col gap-1 ml-auto">
+            <span className="text-[11px] font-bold text-slate-500">정렬</span>
+            <select
+              value={sort} onChange={(e) => setParam('sort', e.target.value)}
+              className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 outline-none min-w-[150px]"
+            >
+              <option value="default">추천순 (등록 순서)</option>
+              <option value="cap_asc">수용 인원 적은 순</option>
+              <option value="cap_desc">수용 인원 많은 순</option>
+              <option value="name">이름순 (가나다)</option>
+            </select>
+          </label>
         </div>
 
         <p className="text-xs text-slate-400 mb-6">
-          {rows.length}건 · 수용 인원 오름차순 · 「확인 필요」는 값을 지어내지 않고 비워 둔 항목입니다.
+          {rows.length}건 · 「확인 필요」는 아직 확정되지 않아 비워 둔 항목입니다.
         </p>
 
         {/* 0건 상태 */}
@@ -166,51 +174,8 @@ export default function UserSpaces() {
           </div>
         )}
 
-        {/* 표 보기 */}
-        {rows.length > 0 && view === 'table' && (
-          <>
-          <p className="lg:hidden text-[11px] text-slate-400 mb-2">
-            표를 좌우로 밀어서 나머지 항목을 볼 수 있습니다. 좁은 화면에서는 「카드」가 보기 편합니다.
-          </p>
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-x-auto">
-            <table className="w-full text-sm min-w-[1020px]">
-              <thead className="bg-slate-50 text-slate-500 text-xs">
-                <tr>
-                  {[['공간', 'w-[190px]'], ['용도', 'w-[100px]'], ['수용', 'w-[90px]'],
-                    ['이용료', 'w-[150px]'], ['소관 부서', 'w-[150px]'], ['연락처', 'w-[110px]'],
-                    ['예약 방법', 'w-[210px]'], ['', 'w-[60px]']].map(([h, w]) => (
-                    <th key={h} className={`px-4 py-3 text-left font-bold whitespace-nowrap ${w}`}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {rows.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3">
-                      <div className="font-bold text-slate-900 whitespace-nowrap">{s.name}</div>
-                      <div className="text-xs text-slate-500">{s.facility} · {s.floor}</div>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{s.category}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{capacityLabel(s as Space)}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{feeLabel(s as Space)}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600 break-keep">{(s as any).owner_dept ?? '확인 필요'}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{s.contact ?? '확인 필요'}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600 break-keep">{s.reservation_method ?? '확인 필요'}</td>
-                    <td className="px-4 py-3 print:hidden">
-                      <Link to={`/spaces/${s.id}`} className="text-indigo-600 font-bold text-xs hover:underline whitespace-nowrap">
-                        상세
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </>
-        )}
-
-        {/* 카드 보기 */}
-        {rows.length > 0 && view === 'card' && (
+        {/* 카드 목록 */}
+        {rows.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {rows.map((space) => (
               <div key={space.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-indigo-200 transition-all group flex flex-col">

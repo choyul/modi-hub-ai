@@ -397,12 +397,12 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
   // 통합의 핵심 — 공무원에게 필요했던 '조건 여러 개'가 한 화면에 있는가
   const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8');
   const hasAll = ['category', 'facility', 'headcount'].every((k) => src.includes(`'${k}'`));
-  const hasTable = src.includes("view === 'table'");
+  const hasSort = src.includes("'cap_asc'") && src.includes("'cap_desc'");
   T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07', area: 'UX',
-      title: '조건 3종(용도·시설·인원)과 표 보기가 한 화면에 있다',
+      title: '조건 3종(용도·시설·인원)과 정렬이 한 화면에 있다',
       pre: '「조건조회」를 「공간안내」로 통합', input: '화면 구성 확인',
-      expected: '필터 3종 + 표/카드 전환 — 별도 메뉴 불필요' },
-    hasAll && hasTable, `필터 3종=${hasAll} · 표보기=${hasTable}`);
+      expected: '필터 3종 + 정렬 — 별도 메뉴 불필요' },
+    hasAll && hasSort, `필터 3종=${hasAll} · 정렬=${hasSort}`);
 }
 {
   const nav = readFileSync('src/layouts/UserLayout.tsx', 'utf8');
@@ -411,8 +411,8 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
       title: '중복 메뉴가 사라지고 기존 링크는 살아 있다',
       pre: '/filter 북마크·문서 링크 존재', input: '네비 + 라우트',
       expected: '메뉴에서 조건조회 제거 · /filter 는 리다이렉트로 보존' },
-    !nav.includes("to: '/filter'") && app.includes('Navigate to="/spaces?view=table"'),
-    `네비 제거=${!nav.includes("to: '/filter'")} · 리다이렉트=${app.includes('Navigate to="/spaces?view=table"')}`);
+    !nav.includes("to: '/filter'") && app.includes('Navigate to="/spaces"'),
+    `네비 제거=${!nav.includes("to: '/filter'")} · 리다이렉트=${app.includes('Navigate to="/spaces"')}`);
 }
 
 // ══════════════════════════════════════════════════════════════

@@ -38,8 +38,8 @@ export default function App() {
             <Route path="search" element={<UserSearch />} />
             <Route path="spaces" element={<UserSpaces />} />
             <Route path="spaces/:id" element={<SpaceDetail />} />
-            {/* 구 「조건조회」 — 공간안내로 합쳤다. 기존 링크가 깨지지 않게 표 보기로 넘긴다 */}
-          <Route path="filter" element={<Navigate to="/spaces?view=table" replace />} />
+            {/* 구 「조건조회」 — 공간안내로 합쳤다. 기존 링크가 깨지지 않게 리다이렉트한다 */}
+          <Route path="filter" element={<Navigate to="/spaces" replace />} />
             <Route path="reservations" element={<UserReservations />} />
             <Route path="login" element={<UserLogin />} />
             <Route path="privacy" element={<Privacy />} />
