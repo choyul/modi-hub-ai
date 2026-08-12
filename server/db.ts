@@ -37,6 +37,16 @@ export interface DbSpace {
 let spacesCache: { rows: DbSpace[]; at: number } | null = null;
 const SPACES_TTL_MS = 60_000;
 
+/**
+ * 공간 캐시 비우기 — 담당자가 값을 고친 직후에 부른다.
+ * 이 호출이 없으면 고친 내용이 TTL(60초) 동안 검색에 반영되지 않아,
+ * 담당자가 "저장했는데 왜 그대로냐"를 겪는다.
+ * (서버리스 인스턴스별 캐시이므로 다른 인스턴스는 최대 TTL 만큼 늦게 반영된다)
+ */
+export function invalidateSpacesCache() {
+  spacesCache = null;
+}
+
 export async function getSpaces(): Promise<DbSpace[]> {
   if (spacesCache && Date.now() - spacesCache.at < SPACES_TTL_MS) return spacesCache.rows;
   const { data, error } = await supabaseAdmin().from('spaces').select('*').order('id');

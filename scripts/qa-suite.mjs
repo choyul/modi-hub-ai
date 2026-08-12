@@ -430,13 +430,102 @@ let stats = null;
       expected: 'detailAuthorized=false' }, body?.detailAuthorized === false,
     `열람=${body?.detailAuthorized}`);
 }
+// ── AD-11 공간 데이터 편집 ──────────────────────────────────
 {
-  const src = readFileSync('src/pages/admin/AdminSpace.tsx', 'utf8');
+  const { status } = await api('/api/admin-spaces');
+  T({ persona: '미인증 외부인', role: 'A', feature: 'AD-11', area: '보안',
+      title: '토큰 없이는 공간 데이터를 열람·수정할 수 없다',
+      pre: '헤더 없음', input: 'GET /api/admin-spaces',
+      expected: '401' }, status === 401, `HTTP ${status}`);
+}
+{
+  const { status, body } = await api('/api/admin-spaces', { headers: adminH });
   T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11', area: '공간관리',
-      title: '담당자가 공간을 직접 수정하는 기능은 열지 않았다 (범위 밖 명시)',
-      pre: '/admin/space', input: '화면 확인',
-      expected: '편집 UI 없음 — 미구현임을 화면에서 밝힘' },
-    !/onSubmit|handleSave|수정하기/.test(src), '편집 UI 미노출 확인');
+      title: '편집용 공간 목록을 불러온다',
+      pre: '토큰 보유', input: 'GET /api/admin-spaces',
+      expected: '200 · 11건' }, status === 200 && (body?.spaces?.length ?? 0) === 11,
+    `HTTP ${status} · ${body?.spaces?.length}건`);
+}
+{
+  // 실제 수정 → 조회로 확인 → 원복
+  const before = (await api('/api/admin-spaces', { headers: adminH }))
+    .body?.spaces?.find((s) => s.id === 'GL6');
+  const { status, body } = await api('/api/admin-spaces', {
+    method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', patch: { capacity_max: 80, capacity_min: 10,
+      contact: '054-679-0000 (QA)' } }),
+  });
+  const ok = status === 200 && body?.space?.capacity_max === 80;
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11', area: '공간관리',
+      title: '비어 있던 값을 채워 저장한다 (주민라운지 정원)',
+      pre: 'GL6 정원 미확정', input: 'capacity 10~80 · 연락처',
+      expected: '200 · 값 반영' }, ok,
+    `HTTP ${status} · 정원=${body?.space?.capacity_min}~${body?.space?.capacity_max} · 변경 ${body?.changed?.length ?? 0}개 필드`);
+
+  // 원복 — QA가 데이터를 바꿔놓고 끝나지 않도록
+  await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', patch: {
+      capacity_max: before?.capacity_max ?? '', capacity_min: before?.capacity_min ?? '',
+      contact: before?.contact ?? '' } }) });
+}
+{
+  const { status, body } = await api('/api/admin-spaces', {
+    method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', patch: { capacity_min: 50, capacity_max: 10 } }),
+  });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11', area: '입력검증',
+      title: '최소 인원이 최대보다 크면 저장되지 않는다',
+      pre: '교차 검증', input: 'min=50 · max=10',
+      expected: '400' }, status === 400, `HTTP ${status} · ${body?.error}`);
+}
+{
+  const { status, body } = await api('/api/admin-spaces', {
+    method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'HO1', patch: { booking_channel: 'self' } }),
+  });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11·BK-08', area: '입력검증',
+      title: '예약방법·정원 없이 온라인 신청을 열 수 없다',
+      pre: 'HO1 = 조건 미확인', input: 'booking_channel=self 만 지정',
+      expected: '400 + 사유 안내' }, status === 400,
+    `HTTP ${status} · ${(body?.error ?? '').slice(0, 60)}`);
+}
+{
+  const { status, body } = await api('/api/admin-spaces', {
+    method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', patch: { id: 'HACKED', embedding: [1, 2, 3] } }),
+  });
+  T({ persona: '권한 오용', role: 'A', feature: 'AD-11', area: '보안',
+      title: '허용되지 않은 필드는 수정할 수 없다 (id·색인)',
+      pre: '화이트리스트', input: 'id·embedding 변경 시도',
+      expected: '400 거절' }, status === 400, `HTTP ${status} · ${body?.error}`);
+}
+{
+  // 값을 비우면 null 로 저장되는가 — "모른다"를 저장할 수 있어야 한다
+  const { body: b1 } = await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL2', patch: { contact: '054-679-1234' } }) });
+  const { body: b2 } = await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL2', patch: { contact: '' } }) });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11·SP-04', area: '공간관리',
+      title: '입력란을 비우면 「확인 필요」로 되돌아간다',
+      pre: '연락처 입력 후 삭제', input: 'contact="" ',
+      expected: 'null 저장 (빈 문자열 아님)' },
+    b1?.space?.contact === '054-679-1234' && b2?.space?.contact === null,
+    `입력후="${b1?.space?.contact}" → 비운후=${JSON.stringify(b2?.space?.contact)}`);
+}
+{
+  // 수정이 검색에 반영되는가 (search_text·임베딩 재색인 + 캐시 무효화)
+  await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', patch: { features: '프로젝터, 가변형 원탁, QA검색어확인' } }) });
+  const { body: found } = await search('QA검색어확인');
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-11·SR-12', area: '공간관리',
+      title: '수정한 내용이 곧바로 검색에 잡힌다 (재색인)',
+      pre: '특징에 새 단어 추가', input: '"QA검색어확인" 검색',
+      expected: 'GL6 검출' },
+    (found?.matched ?? []).some((m) => m.id === 'GL6'),
+    `결과=${(found?.matched ?? []).map((m) => m.id).join(',') || '없음'} 계층=${found?.answeredBy}`);
+
+  await api('/api/admin-spaces', { method: 'PATCH', headers: adminH,
+    body: JSON.stringify({ id: 'GL6', patch: { features: '프로젝터·마이크, 가변형 가구(접이식 원탁)' } }) });
 }
 
 // ══════════════════════════════════════════════════════════════

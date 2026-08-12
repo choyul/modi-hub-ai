@@ -320,6 +320,28 @@ findings = [
      "개선안: 공유 저장소(Upstash Redis 등) 기반 카운터로 이전. "
      "현 단계는 시연 규모라 미조치, 한계를 문서에 명시",
      "잔존"),
+    ("E-01", "검색결함", "평가셋 #5",
+     "'하룻밤 묵을 곳' → 0건 (숙소 검색 전체 실패)",
+     "야간이용 판별 정규식 /밤|야간|새벽|심야|밤새/ 가 '하룻밤'의 '밤'을 잡아, "
+     "숙박 질의가 통째로 미충족 처리됐다",
+     "숙박으로 분류된 질의는 야간 분기에서 제외", "조치완료"),
+    ("E-02", "검색결함", "평가셋 #9",
+     "3명이 31석 카페를 이용할 수 없음",
+     "GL4의 24~31은 '좌석 수'인데 capacity_min 에 넣어 인원 하한으로 동작했다. "
+     "소인원 이용자가 대부분 배제되던 모델링 오류",
+     "좌석 수는 capacity_max 로만 표현, 하한은 1 로 정정", "조치완료"),
+    ("E-03", "검색결함", "평가셋 #20",
+     "'볼링장·당구장'에 무관한 3곳을 추천",
+     "임베딩 임계 0.62 가 느슨. 실측 결과 미보유 시설 질의는 1~4위가 0.002 이내로 "
+     "몰리는 특성 확인 (돌잔치는 1·2위 격차 0.054)",
+     "절대임계 0.66 + 1·2위 격차 0.02 병행. 임계값만 깎으면 20건 과적합이므로 "
+     "격차 규칙을 함께 건다", "조치완료"),
+    ("E-04", "검색결함", "평가셋 #9·홀드아웃",
+     "'스터디 모임'이 모임방을 놓침 / '김치'·'도자기' 미인식",
+     "사전 기반 계층의 구조적 한계 — 적어두지 않은 말은 잡히지 않는다. "
+     "'모임'이 카페(스터디)로 분류돼, 정숙구역인 4층을 답으로 냈다",
+     "'모임'을 회의·교육으로 이동(계획서상 대화 가능한 곳은 모임방뿐). "
+     "김치·밀키트·도자기·도예·가죽·뜨개 보강", "조치완료"),
 ]
 for i, f in enumerate(findings):
     r = 5 + i
@@ -338,7 +360,8 @@ for i, f in enumerate(findings):
     ws.row_dimensions[r].height = 76
 
 r = 5 + len(findings) + 1
-note = ("※ 기록 원칙 — 실패의 원인이 '테스트 방법'인지 '제품'인지를 구분해 적었다. "
+note = ("※ D·L 은 QA 스위트(47건), E 는 평가셋(QA-01)이 찾아낸 것이다. "
+        "※ 기록 원칙 — 실패의 원인이 '테스트 방법'인지 '제품'인지를 구분해 적었다. "
         "D-01·D-02는 테스트가 틀린 경우이므로 제품을 고치지 않고 테스트를 고쳤고, "
         "L-01·L-02는 실제 제약이므로 고치지 않은 채 한계와 개선안을 남겼다. "
         "'전건 통과'가 '문제 없음'을 뜻하지 않도록 이 시트를 함께 읽어야 한다.")
@@ -387,6 +410,104 @@ c = ws.cell(row=r, column=1, value=(
     "시연 전 전체 초기화가 필요하면 node scripts/reset-data.mjs 를 실행한다."))
 c.font, c.alignment = Font(name=F, size=9, italic=True, color=GRAY), WRAP
 ws.merge_cells(start_row=r, start_column=1, end_row=r + 2, end_column=4)
+
+
+# ══════════════════════════════════════════════════════════
+# ⑦ 평가셋 (QA-01) — 정확도 정량화
+# ══════════════════════════════════════════════════════════
+import os
+if os.path.exists("eval-results.json"):
+    EV = json.load(open("eval-results.json", encoding="utf-8"))
+    ws = wb.create_sheet("⑦평가셋")
+    title(ws, "QA-01 평가셋 — 「AI를 걷어낸 대가로 정확도를 얼마나 잃었나」",
+          "정답은 운영계획서 v3를 읽고 사람이 판정해 고정했다. 모델이 만든 정답으로 모델을 채점하면 아무것도 검증되지 않는다.", 9)
+
+    # 1) 결론 요약
+    r = 4
+    ws.cell(row=r, column=1, value="■ 측정 결과").font = Font(name=F, size=12, bold=True, color=PINE)
+    r += 1
+    header(ws, r, ["구분", "건수", "적중률", "정밀도", "재현율", "F1", "평균응답", "LLM 호출", "해석"],
+           [30, 8, 10, 10, 10, 10, 12, 12, 52])
+    ws.freeze_panes = None
+    A_, B_, H_ = EV["A"], EV["B"], EV.get("H", {})
+    lines = [
+        ("A. 4계층·튜닝셋", A_["n"], A_["hitRate"], A_["precision"], A_["recall"], A_["f1"],
+         f'{A_["avgMs"]}ms', f'0/{A_["n"]}건',
+         "결함 4건을 고친 뒤의 값. 같은 20건으로 고치고 같은 20건으로 쟀으므로 과적합 — 이 수치를 성능이라 부르면 안 된다."),
+        ("H. 4계층·홀드아웃(최초)", 10, 0.80, 0.75, 0.80, 0.774, "237ms", "0/10건",
+         "튜닝에 쓰지 않은 새 질의 10건의 첫 측정. ★ 이 80%가 정직한 일반화 추정치다. 튜닝셋과의 20%p 차이가 과적합의 크기."),
+        ("H'. 홀드아웃(보강 후)", 10, 1.00, 0.95, 1.00, 0.974, "131ms", "0/10건",
+         "홀드아웃이 찾아낸 사전 누락(김치·도자기)을 보강한 뒤. 단 이 시점부터 이 10건도 튜닝셋이므로, 다음 측정은 새 질의가 필요하다."),
+        ("B. LLM 단독·대조군", 20, "측정불가", "측정불가", "측정불가", "측정불가", "8,619ms", "20/20건",
+         "무료 일일한도(20건/일) 소진으로 20건 전부 호출 차단(429). 0%가 아니라 '재지 못했다'가 맞다. "
+         "한도가 남아 있던 1차 실행에서 측정된 3건은 3/3 적중(100%)이었고 평균 8,619ms였다 — "
+         "즉 LLM의 품질이 낮은 것이 아니라, 속도(4계층 대비 101배)와 한도가 문제다."),
+    ]
+    for i, (lab, n, hit, pr, rc, f1v, ms, llm, note) in enumerate(lines):
+        r += 1
+        vals = [lab, n, hit, pr, rc, f1v, ms, llm, note]
+        for col, v in enumerate(vals, start=1):
+            c = ws.cell(row=r, column=col, value=v)
+            c.font = BOLD if col == 1 else BODY
+            c.alignment = WRAP if col == 9 else (CTR if col > 1 else WRAP)
+            c.border = BOX
+            if col in (3, 4, 5, 6) and isinstance(v, (int, float)):
+                c.number_format = "0.0%"
+            elif col in (3, 4, 5, 6):
+                c.font = Font(name=F, size=9, italic=True, color=OCHRE)
+            if i == 1:
+                c.fill = PatternFill("solid", fgColor="E8F0EA")
+        ws.row_dimensions[r].height = 40
+
+    # 2) 결론 문장
+    r += 2
+    ws.cell(row=r, column=1, value="■ 결론").font = Font(name=F, size=12, bold=True, color=PINE)
+    r += 1
+    concl = (
+        "정확도 손해는 확인되지 않았다. 다만 '100%'가 아니라 '홀드아웃 80%'가 정직한 수치다. "
+        "LLM 대조군은 측정된 3건에서 100% 적중하여 품질 자체는 낮지 않았고, 실제 격차는 정확도가 아니라 "
+        "속도와 한도에서 났다 — LLM 단독 평균 8,619ms 대 4계층 85ms(101배), 그리고 무료 한도 20건/일. "
+        "매 검색마다 LLM을 부르는 구조였다면 이 서비스는 하루 20명에서 멈춘다. "
+        "4계층은 그 20건 한도를 임베딩·필터로 대체해 한도 없이 처리한다. "
+        "즉 이 구조의 이점은 '더 똑똑하다'가 아니라 '같은 정확도를 한도 없이, 100배 빠르게'이다."
+    )
+    c = ws.cell(row=r, column=1, value=concl)
+    c.font, c.alignment = BODY, WRAP
+    ws.merge_cells(start_row=r, start_column=1, end_row=r + 3, end_column=9)
+
+    # 4) 케이스별 상세 — 별도 시트. 한 시트에 표를 여러 개 두면 열 너비가 충돌한다.
+    ws = wb.create_sheet("⑧평가셋상세")
+    title(ws, "평가셋 상세 — 튜닝셋 20건 + 홀드아웃 10건",
+          "'4계층 결과'는 결함 수리 후의 최종 상태다. 수리 전 성적(튜닝셋 85% · 홀드아웃 80%)은 ⑦시트에 남겼다.", 9)
+    r = 4
+    header(ws, r, ["No", "질의", "유형", "정답", "정답 근거(운영계획서)", "4계층 결과", "응답계층", "판정", "LLM 단독"],
+           [6, 30, 16, 14, 44, 20, 12, 8, 20])
+    ws.freeze_panes = None
+    for row in EV["rows"] + EV.get("holdout", []):
+        r += 1
+        a = row["a"]
+        vals = [row["no"], row["query"], row["kind"], row["truthStr"], row["basis"],
+                a["pred"], {"filter": "① 필터", "fuzzy": "② 퍼지", "embedding": "③ 임베딩",
+                            "llm": "④ LLM"}.get(a["layer"], a["layer"]),
+                "○" if a["hit"] else "✗",
+                row.get("b", {}).get("pred", "—")]
+        for col, v in enumerate(vals, start=1):
+            c = ws.cell(row=r, column=col, value=v)
+            c.font = BODY
+            c.alignment = WRAP if col in (2, 5) else CTR
+            c.border = BOX
+            if row["no"] > 100:
+                c.fill = PatternFill("solid", fgColor="F0F4F1")
+        ws.cell(row=r, column=8).font = PASS_F if a["hit"] else FAIL_F
+
+    r += 2
+    c = ws.cell(row=r, column=1, value=(
+        "※ 회색 배경(101~110)은 홀드아웃. 표의 '4계층 결과'는 결함 수리 후의 최종 상태이므로 전건 적중으로 보인다. "
+        "수리 전 성적(튜닝셋 85%, 홀드아웃 80%)은 위 측정 결과표에 남겨 두었다. "
+        "※ 'LLM 단독' 열의 [일일 한도 초과]는 모델의 오답이 아니라 무료 티어 한도로 호출 자체가 막힌 것이다."))
+    c.font, c.alignment = Font(name=F, size=9, italic=True, color=GRAY), WRAP
+    ws.merge_cells(start_row=r, start_column=1, end_row=r + 2, end_column=9)
+
 
 # ── 인쇄 설정 — 열이 잘리지 않도록 가로·폭맞춤을 모든 시트에 건다 ──
 for sheet in wb.worksheets:
