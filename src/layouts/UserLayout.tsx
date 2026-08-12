@@ -10,8 +10,9 @@ import { useAuth } from '../contexts/AuthContext';
 
 const NAV = [
   { to: '/', label: '홈' },
+  // 「조건조회」는 「공간안내」로 합쳤다 — 같은 데이터를 같은 방식으로 보여주면서
+  // 필터 개수와 표시 형식만 다른 메뉴가 둘 있어 이용자가 구분할 수 없었다.
   { to: '/spaces', label: '공간안내' },
-  { to: '/filter', label: '조건조회' },
   { to: '/reservations', label: '예약현황' },
 ];
 

@@ -374,7 +374,7 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
   const all = spacesJson.spaces;
   T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07', area: '조건조회',
       title: '조건 필터 화면이 전체 공간을 다 담고 있다',
-      pre: '/filter 화면', input: '데이터 로드',
+      pre: '/spaces 화면 (구 조건조회 통합)', input: '데이터 로드',
       expected: '계획서 공간 11건 전량' }, all.length === 11, `${all.length}건`);
 
   const cats = [...new Set(all.map((s) => s.category))];
@@ -386,12 +386,33 @@ const spacesJson = JSON.parse(readFileSync('src/data/spaces.json', 'utf8'));
     cats.join(', '));
 }
 {
-  const src = readFileSync('src/pages/user/FilterPage.tsx', 'utf8');
+  const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8');
   T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07·G1', area: 'UX',
       title: '이 화면은 AI를 쓰지 않는다고 명시되어 있다',
-      pre: '/filter', input: '화면 문구',
+      pre: '/spaces', input: '화면 문구',
       expected: '"AI를 사용하지 않습니다" 고지 존재' },
     src.includes('AI를 사용하지 않'), src.includes('AI를 사용하지 않') ? '고지 문구 확인' : '문구 없음');
+}
+{
+  // 통합의 핵심 — 공무원에게 필요했던 '조건 여러 개'가 한 화면에 있는가
+  const src = readFileSync('src/pages/user/UserSpaces.tsx', 'utf8');
+  const hasAll = ['category', 'facility', 'headcount'].every((k) => src.includes(`'${k}'`));
+  const hasTable = src.includes("view === 'table'");
+  T({ persona: 'P4 최영수(45·공무원)', role: 'O', feature: 'SP-07', area: 'UX',
+      title: '조건 3종(용도·시설·인원)과 표 보기가 한 화면에 있다',
+      pre: '「조건조회」를 「공간안내」로 통합', input: '화면 구성 확인',
+      expected: '필터 3종 + 표/카드 전환 — 별도 메뉴 불필요' },
+    hasAll && hasTable, `필터 3종=${hasAll} · 표보기=${hasTable}`);
+}
+{
+  const nav = readFileSync('src/layouts/UserLayout.tsx', 'utf8');
+  const app = readFileSync('src/App.tsx', 'utf8');
+  T({ persona: 'P1 김명자(68·주민)', role: 'O', feature: 'SP-07·G10', area: 'UX',
+      title: '중복 메뉴가 사라지고 기존 링크는 살아 있다',
+      pre: '/filter 북마크·문서 링크 존재', input: '네비 + 라우트',
+      expected: '메뉴에서 조건조회 제거 · /filter 는 리다이렉트로 보존' },
+    !nav.includes("to: '/filter'") && app.includes('Navigate to="/spaces?view=table"'),
+    `네비 제거=${!nav.includes("to: '/filter'")} · 리다이렉트=${app.includes('Navigate to="/spaces?view=table"')}`);
 }
 
 // ══════════════════════════════════════════════════════════════

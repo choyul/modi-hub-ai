@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route , Navigate } from 'react-router';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminSpace from './pages/admin/AdminSpace';
@@ -14,7 +14,6 @@ import UserSpaces from './pages/user/UserSpaces';
 import SpaceDetail from './pages/user/SpaceDetail';
 import UserReservations from './pages/user/UserReservations';
 import UserLogin from './pages/user/UserLogin';
-import FilterPage from './pages/user/FilterPage';
 import NotFound from './pages/misc/NotFound';
 import Privacy from './pages/misc/Privacy';
 import { AuthProvider } from './contexts/AuthContext';
@@ -39,7 +38,8 @@ export default function App() {
             <Route path="search" element={<UserSearch />} />
             <Route path="spaces" element={<UserSpaces />} />
             <Route path="spaces/:id" element={<SpaceDetail />} />
-            <Route path="filter" element={<FilterPage />} />
+            {/* 구 「조건조회」 — 공간안내로 합쳤다. 기존 링크가 깨지지 않게 표 보기로 넘긴다 */}
+          <Route path="filter" element={<Navigate to="/spaces?view=table" replace />} />
             <Route path="reservations" element={<UserReservations />} />
             <Route path="login" element={<UserLogin />} />
             <Route path="privacy" element={<Privacy />} />

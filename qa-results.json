@@ -1,8 +1,8 @@
 {
   "summary": {
     "base": "https://modi-hub-ai.vercel.app",
-    "total": 57,
-    "pass": 57,
+    "total": 59,
+    "pass": 59,
     "fail": 0,
     "rate": 100,
     "byRole": {
@@ -15,8 +15,8 @@
         "pass": 17
       },
       "O": {
-        "total": 3,
-        "pass": 3
+        "total": 5,
+        "pass": 5
       },
       "A": {
         "total": 16,
@@ -28,20 +28,20 @@
       }
     },
     "stats": {
-      "totalSearches": 75,
-      "successCount": 24,
-      "unmetCount": 51,
+      "totalSearches": 96,
+      "successCount": 31,
+      "unmetCount": 65,
       "unmetRate": 68,
-      "registeredDemands": 3,
-      "contactLeft": 3,
+      "registeredDemands": 4,
+      "contactLeft": 4,
       "reservationCount": 1,
       "pendingReservations": 0,
       "cancelledReservations": 1,
-      "feedbackCount": 3,
-      "avgLatencyMs": 2184,
-      "noLlmCount": 56,
-      "noLlmRate": 75,
-      "notifyWaiters": 3
+      "feedbackCount": 4,
+      "avgLatencyMs": 1841,
+      "noLlmCount": 74,
+      "noLlmRate": 77,
+      "notifyWaiters": 4
     }
   },
   "cases": [
@@ -56,7 +56,7 @@
       "pre": "로그인 없음",
       "input": "\"부녀회 8명이 김장할 만한 곳\"",
       "expected": "200 · 결과 1건 이상 · 키친 계열 포함",
-      "actual": "200 · GL3 · 1558ms",
+      "actual": "200 · GL3 · 727ms",
       "result": "PASS"
     },
     {
@@ -84,7 +84,7 @@
       "pre": "서버 워밍업 후 — 콜드스타트 제외",
       "input": "동일",
       "expected": "3,000ms 미만",
-      "actual": "1558ms (콜드스타트 최초 1회는 19914ms)",
+      "actual": "727ms (콜드스타트 최초 1회는 2965ms)",
       "result": "PASS"
     },
     {
@@ -264,9 +264,9 @@
       "area": "인증",
       "title": "주민이 스스로 계정을 만든다 (확인 메일 없이 바로 사용)",
       "pre": "로그인 없음",
-      "input": "qa-1786531015973@test.modi",
+      "input": "qa-1786532784499@test.modi",
       "expected": "200 · 곧바로 로그인 가능한 상태",
-      "actual": "HTTP 200 qa-1786531015973@test.modi",
+      "actual": "HTTP 200 qa-1786532784499@test.modi",
       "result": "PASS"
     },
     {
@@ -364,7 +364,7 @@
       "pre": "GL4M = self/live · 정원 6명",
       "input": "9/15 14~16시 · 5명 · 독서모임",
       "expected": "200 접수",
-      "actual": "HTTP 200 · REV-260812-0992",
+      "actual": "HTTP 200 · REV-260812-9335",
       "result": "PASS"
     },
     {
@@ -474,7 +474,7 @@
       "area": "대관신청",
       "title": "승인 전이면 스스로 취소할 수 있다 (되돌리기)",
       "pre": "승인대기 상태",
-      "input": "DELETE REV-260812-0992",
+      "input": "DELETE REV-260812-9335",
       "expected": "200 · status=\"취소\"",
       "actual": "HTTP 200 · 취소",
       "result": "PASS"
@@ -488,7 +488,7 @@
       "area": "보안",
       "title": "남의 신청은 취소할 수 없다",
       "pre": "다른 계정으로 로그인",
-      "input": "DELETE REV-260812-0992 (타인 소유)",
+      "input": "DELETE REV-260812-9335 (타인 소유)",
       "expected": "404/403 — 성공(200)이면 중대 결함",
       "actual": "HTTP 404",
       "result": "PASS"
@@ -501,7 +501,7 @@
       "feature": "SP-07",
       "area": "조건조회",
       "title": "조건 필터 화면이 전체 공간을 다 담고 있다",
-      "pre": "/filter 화면",
+      "pre": "/spaces 화면 (구 조건조회 통합)",
       "input": "데이터 로드",
       "expected": "계획서 공간 11건 전량",
       "actual": "11건",
@@ -529,7 +529,7 @@
       "feature": "SP-07·G1",
       "area": "UX",
       "title": "이 화면은 AI를 쓰지 않는다고 명시되어 있다",
-      "pre": "/filter",
+      "pre": "/spaces",
       "input": "화면 문구",
       "expected": "\"AI를 사용하지 않습니다\" 고지 존재",
       "actual": "고지 문구 확인",
@@ -538,6 +538,34 @@
     {
       "no": 36,
       "tcId": "TC-036",
+      "persona": "P4 최영수(45·공무원)",
+      "role": "O",
+      "feature": "SP-07",
+      "area": "UX",
+      "title": "조건 3종(용도·시설·인원)과 표 보기가 한 화면에 있다",
+      "pre": "「조건조회」를 「공간안내」로 통합",
+      "input": "화면 구성 확인",
+      "expected": "필터 3종 + 표/카드 전환 — 별도 메뉴 불필요",
+      "actual": "필터 3종=true · 표보기=true",
+      "result": "PASS"
+    },
+    {
+      "no": 37,
+      "tcId": "TC-037",
+      "persona": "P1 김명자(68·주민)",
+      "role": "O",
+      "feature": "SP-07·G10",
+      "area": "UX",
+      "title": "중복 메뉴가 사라지고 기존 링크는 살아 있다",
+      "pre": "/filter 북마크·문서 링크 존재",
+      "input": "네비 + 라우트",
+      "expected": "메뉴에서 조건조회 제거 · /filter 는 리다이렉트로 보존",
+      "actual": "네비 제거=true · 리다이렉트=true",
+      "result": "PASS"
+    },
+    {
+      "no": 38,
+      "tcId": "TC-038",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-01",
@@ -546,12 +574,12 @@
       "pre": "토큰 보유",
       "input": "GET /api/stats",
       "expected": "200 · 검색 누적 집계",
-      "actual": "검색 75건 · 미충족 51건",
+      "actual": "검색 96건 · 미충족 65건",
       "result": "PASS"
     },
     {
-      "no": 37,
-      "tcId": "TC-037",
+      "no": 39,
+      "tcId": "TC-039",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-02",
@@ -560,12 +588,12 @@
       "pre": "미충족 발생",
       "input": "unmetTypes",
       "expected": "유형 1개 이상",
-      "actual": "분류 미상(32), 영주 지역 회의·교육(3), 요청 조건 없음(3), 수영장(2), 불분명한 용도의 공간(1), 특정 용도 공간(1), 명확한 공간 요청 없음(1), 검색 조건 불충분(1), 공간 유형(1), 요청 정보 없음(1), 요청을 이해할 수 없음(1), 불분명한 요청(1), QA검색어확인 관련 공간(1), 2인 워밍업 공간(1), 다목적 워밍업 공간(1)",
+      "actual": "분류 미상(42), 영주 지역 회의·교육(4), 수영장(3), 요청 조건 없음(3), 유효하지 않은 요청(1), 요청 유형 불분명(1), 불분명한 용도의 공간(1), 특정 용도 공간(1), 명확한 공간 요청 없음(1), 검색 조건 불충분(1), 공간 유형(1), 요청 정보 없음(1), 요청을 이해할 수 없음(1), 불분명한 요청(1), QA검색어확인 관련 공간(1), 2인 워밍업 공간(1), 다목적 워밍업 공간(1)",
       "result": "PASS"
     },
     {
-      "no": 38,
-      "tcId": "TC-038",
+      "no": 40,
+      "tcId": "TC-040",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-03·SR-10",
@@ -574,12 +602,12 @@
       "pre": "검색 누적",
       "input": "noLlmRate",
       "expected": "숫자값 · 계층 분포 표기",
-      "actual": "무LLM 75% · ③ 임베딩:32 ④ LLM:19 ① 조건필터:18 ② 퍼지:6",
+      "actual": "무LLM 77% · ③ 임베딩:43 ① 조건필터:23 ④ LLM:22 ② 퍼지:8",
       "result": "PASS"
     },
     {
-      "no": 39,
-      "tcId": "TC-039",
+      "no": 41,
+      "tcId": "TC-041",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-14",
@@ -588,12 +616,12 @@
       "pre": "GL7 알림 신청됨",
       "input": "notifyWaiters",
       "expected": "1명 이상",
-      "actual": "3명 · 게스트하우스",
+      "actual": "4명 · 게스트하우스",
       "result": "PASS"
     },
     {
-      "no": 40,
-      "tcId": "TC-040",
+      "no": 42,
+      "tcId": "TC-042",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-13",
@@ -602,12 +630,12 @@
       "pre": "피드백 제출됨",
       "input": "feedbackReasons",
       "expected": "1건 이상",
-      "actual": "3건 · 시간이 안 맞아요",
+      "actual": "4건 · 시간이 안 맞아요",
       "result": "PASS"
     },
     {
-      "no": 41,
-      "tcId": "TC-041",
+      "no": 43,
+      "tcId": "TC-043",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "LG-06",
@@ -620,8 +648,8 @@
       "result": "PASS"
     },
     {
-      "no": 42,
-      "tcId": "TC-042",
+      "no": 44,
+      "tcId": "TC-044",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-04",
@@ -634,8 +662,8 @@
       "result": "PASS"
     },
     {
-      "no": 43,
-      "tcId": "TC-043",
+      "no": 45,
+      "tcId": "TC-045",
       "persona": "토큰 오입력",
       "role": "A",
       "feature": "LG-06",
@@ -648,8 +676,8 @@
       "result": "PASS"
     },
     {
-      "no": 44,
-      "tcId": "TC-044",
+      "no": 46,
+      "tcId": "TC-046",
       "persona": "미인증 외부인",
       "role": "A",
       "feature": "AD-11",
@@ -662,8 +690,8 @@
       "result": "PASS"
     },
     {
-      "no": 45,
-      "tcId": "TC-045",
+      "no": 47,
+      "tcId": "TC-047",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11",
@@ -676,8 +704,8 @@
       "result": "PASS"
     },
     {
-      "no": 46,
-      "tcId": "TC-046",
+      "no": 48,
+      "tcId": "TC-048",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11",
@@ -690,8 +718,8 @@
       "result": "PASS"
     },
     {
-      "no": 47,
-      "tcId": "TC-047",
+      "no": 49,
+      "tcId": "TC-049",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11",
@@ -704,8 +732,8 @@
       "result": "PASS"
     },
     {
-      "no": 48,
-      "tcId": "TC-048",
+      "no": 50,
+      "tcId": "TC-050",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11·BK-08",
@@ -718,8 +746,8 @@
       "result": "PASS"
     },
     {
-      "no": 49,
-      "tcId": "TC-049",
+      "no": 51,
+      "tcId": "TC-051",
       "persona": "권한 오용",
       "role": "A",
       "feature": "AD-11",
@@ -732,8 +760,8 @@
       "result": "PASS"
     },
     {
-      "no": 50,
-      "tcId": "TC-050",
+      "no": 52,
+      "tcId": "TC-052",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11·SP-04",
@@ -746,8 +774,8 @@
       "result": "PASS"
     },
     {
-      "no": 51,
-      "tcId": "TC-051",
+      "no": 53,
+      "tcId": "TC-053",
       "persona": "P5 조율(담당자)",
       "role": "A",
       "feature": "AD-11·SR-12",
@@ -760,8 +788,8 @@
       "result": "PASS"
     },
     {
-      "no": 52,
-      "tcId": "TC-052",
+      "no": 54,
+      "tcId": "TC-054",
       "persona": "시스템(배치)",
       "role": "S",
       "feature": "SR-03",
@@ -774,8 +802,8 @@
       "result": "PASS"
     },
     {
-      "no": 53,
-      "tcId": "TC-053",
+      "no": 55,
+      "tcId": "TC-055",
       "persona": "시스템(배치)",
       "role": "S",
       "feature": "LG-04",
@@ -788,8 +816,8 @@
       "result": "PASS"
     },
     {
-      "no": 54,
-      "tcId": "TC-054",
+      "no": 56,
+      "tcId": "TC-056",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "RLS",
@@ -802,8 +830,8 @@
       "result": "PASS"
     },
     {
-      "no": 55,
-      "tcId": "TC-055",
+      "no": 57,
+      "tcId": "TC-057",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "RLS",
@@ -816,22 +844,22 @@
       "result": "PASS"
     },
     {
-      "no": 56,
-      "tcId": "TC-056",
+      "no": 58,
+      "tcId": "TC-058",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "NF-03",
       "area": "보안",
       "title": "브라우저 번들에 Gemini 키·service_role 키가 없다",
       "pre": "npm run build 산출물",
-      "input": "dist/assets/*.js (556KB)",
+      "input": "dist/assets/*.js (555KB)",
       "expected": "API 키 문자열 0건",
       "actual": "Gemini키=없음 · secret키=없음 (실제 키 값 대조)",
       "result": "PASS"
     },
     {
-      "no": 57,
-      "tcId": "TC-057",
+      "no": 59,
+      "tcId": "TC-059",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "NF-05",
@@ -840,7 +868,7 @@
       "pre": "분당 20회 제한 · 순차 호출",
       "input": "25회 연속 호출",
       "expected": "20회 통과 후 429 반환",
-      "actual": "25회 중 통과=10 차단=15 (15514ms)",
+      "actual": "25회 중 통과=8 차단=17 (13814ms)",
       "result": "PASS"
     }
   ]
