@@ -290,14 +290,8 @@ export default function UserSearch() {
                   조건에 맞는 공간이 봉화에 아직 없습니다
                 </h2>
                 <p className="text-sm text-slate-500 leading-relaxed max-w-md">
-                  없는 것을 있다고 안내하지 않습니다.
-                  {result.unmetType && (
-                    <>
-                      {' '}
-                      찾으신 것은 <b className="text-slate-700">{result.unmetType}</b>으로
-                      기록했습니다.
-                    </>
-                  )}
+                  아래에서 비슷한 공간을 확인하시거나, 원하시는 공간을 알려 주시면
+                  담당 부서에 전달해 드립니다.
                 </p>
               </div>
 
@@ -377,10 +371,7 @@ export default function UserSearch() {
                         이 수요를 봉화군에 전달할까요?
                       </h3>
                       <p className="text-[13px] text-slate-500 leading-relaxed">
-                        찾으셨는데 없었던 공간은 도시재생팀이 다음 유휴공간 활용을 기획할 때 쓰는
-                        근거가 됩니다. 전달되는 것은{' '}
-                        <b className="text-slate-700">질문 내용</b>이며, 누가 검색했는지는 저장하지
-                        않습니다.
+                        의견을 주시면 더 나은 봉화군을 만드는 데 도움이 됩니다.
                       </p>
                     </div>
                   </div>
@@ -414,9 +405,6 @@ export default function UserSearch() {
                   >
                     {demandState === 'sending' ? '전달 중…' : '봉화군에 전달하기'}
                   </button>
-                  <p className="text-[11.5px] text-slate-400 mt-2 text-center">
-                    전달하지 않아도 이 화면을 그냥 닫으셔도 됩니다.
-                  </p>
                 </>
               ) : (
                 <div className="flex items-start gap-3">
