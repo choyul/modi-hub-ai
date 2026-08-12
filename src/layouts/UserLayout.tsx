@@ -10,12 +10,14 @@ import { useAuth } from '../contexts/AuthContext';
 
 /**
  * 메뉴는 지금 누를 수 있는 것만 둔다.
+ * - 「홈」은 좌측 로고가 그 역할을 하므로 메뉴로 두지 않는다 (중복).
+ *   그 결과 로그인 전에는 상단 메뉴가 비고, 로고와 로그인 버튼만 남는다.
  * - 「공간안내」는 홈 아래에 그대로 들어갔으므로 별도 메뉴를 두지 않는다
  *   (/spaces 주소 자체는 살아 있다 — 카테고리 링크·기존 북마크용)
  * - 「예약현황」은 로그인해야 볼 수 있는 화면이므로 로그인 전에는 감춘다.
  *   눌러도 로그인 화면으로 튕기는 메뉴를 보여줄 이유가 없다.
+ * - 「담당자」는 주민 메뉴가 아니라 내부 진입로이므로 헤더에서 빼 푸터로 내렸다.
  */
-const NAV = [{ to: '/', label: '홈' }];
 const NAV_AUTHED = [{ to: '/reservations', label: '예약현황' }];
 
 export default function UserLayout() {
@@ -59,7 +61,7 @@ export default function UserLayout() {
 
           <div className="flex items-center gap-4 md:gap-8">
             <nav className="hidden md:flex gap-6 items-center text-sm font-medium text-slate-600">
-              {[...NAV, ...(isLoggedIn ? NAV_AUTHED : [])].map((n) => (
+              {(isLoggedIn ? NAV_AUTHED : []).map((n) => (
                 <Link
                   key={n.to}
                   to={n.to}
@@ -68,10 +70,6 @@ export default function UserLayout() {
                   {n.label}
                 </Link>
               ))}
-              <Link to="/admin/login" className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-800 transition-colors text-xs font-bold text-slate-500">
-                <span className="material-symbols-outlined text-[14px] pt-0.5" aria-hidden="true">lock</span>
-                담당자
-              </Link>
             </nav>
 
             <div className="hidden md:flex items-center gap-3">
@@ -132,7 +130,7 @@ export default function UserLayout() {
 
         {mobileOpen && (
           <nav className="md:hidden absolute left-0 right-0 top-20 bg-white border-b border-slate-200 shadow-lg px-4 py-3 space-y-1">
-            {[...NAV, ...(isLoggedIn ? NAV_AUTHED : [])].map((n) => (
+            {(isLoggedIn ? NAV_AUTHED : []).map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
@@ -152,7 +150,6 @@ export default function UserLayout() {
                   <button onClick={handleLogout} className="text-sm font-bold text-red-600">로그아웃</button>
                 </>
               )}
-              <Link to="/admin/login" className="text-xs font-bold text-slate-400">담당자</Link>
             </div>
           </nav>
         )}
@@ -166,12 +163,16 @@ export default function UserLayout() {
       <footer className="bg-slate-100 border-t border-slate-200 px-6 py-3 text-[11px] text-slate-400 font-medium">
         <div className="flex flex-wrap gap-x-4 gap-y-1 max-w-7xl mx-auto w-full justify-between items-center">
           <span>봉화군 도시계획과 도시재생팀 · 시범 서비스 © 2026</span>
-          <div className="flex gap-x-4">
+          <div className="flex gap-x-4 items-center">
             <Link to="/credits" className="hover:text-slate-600 underline underline-offset-2">
               이미지 출처
             </Link>
             <Link to="/privacy" className="hover:text-slate-600 underline underline-offset-2">
               개인정보 처리 안내
+            </Link>
+            <Link to="/admin/login" className="flex items-center gap-1 hover:text-slate-600 underline underline-offset-2">
+              <span className="material-symbols-outlined text-[13px]" aria-hidden="true">lock</span>
+              담당자 로그인
             </Link>
           </div>
         </div>
