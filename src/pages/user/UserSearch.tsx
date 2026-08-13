@@ -143,6 +143,11 @@ export default function UserSearch() {
 
   const hasResults = !!result && result.matched.length > 0;
 
+  // 엔진이 「미보유 시설 · 수영장」으로 분류해 주면 시설 이름만 떼어 쓴다
+  const absentFacility = result?.unmetType?.startsWith('미보유 시설 · ')
+    ? result.unmetType.replace('미보유 시설 · ', '')
+    : null;
+
   async function registerDemand() {
     if (!result) return;
     setDemandState('sending');
@@ -286,12 +291,18 @@ export default function UserSearch() {
                     travel_explore
                   </span>
                 </div>
+                {/* 없는 시설을 물었으면 그 이름을 그대로 말한다. 「조건에 맞는
+                    공간」보다 「수영장은 없다」가 정확하고, 정확해야 다음 행동을
+                    정할 수 있다. */}
                 <h2 className="text-xl font-bold text-slate-900 mb-2">
-                  조건에 맞는 공간이 봉화에 아직 없습니다
+                  {absentFacility
+                    ? `봉화에 ${absentFacility}은(는) 아직 없습니다`
+                    : '조건에 맞는 공간이 봉화에 아직 없습니다'}
                 </h2>
                 <p className="text-sm text-slate-500 leading-relaxed max-w-md">
-                  아래에서 비슷한 공간을 확인하시거나, 원하시는 공간을 알려 주시면
-                  담당 부서에 전달해 드립니다.
+                  {result.nearAlternatives.length > 0
+                    ? '아래에서 비슷한 공간을 확인하시거나, 원하시는 공간을 알려 주시면 담당 부서에 전달해 드립니다.'
+                    : '원하시는 공간을 알려 주시면 담당 부서에 전달해 드립니다.'}
                 </p>
               </div>
 

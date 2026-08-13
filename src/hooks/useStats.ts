@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ADMIN_TOKEN_KEY } from '../lib/adminToken';
+import { adminFetch } from './useAdminApi';
 
 /**
  * 담당자 화면 공통 데이터 소스.
@@ -88,7 +90,8 @@ export interface Stats {
   feedback: FeedbackRow[];
 }
 
-export const ADMIN_TOKEN_KEY = 'modi_admin_token';
+// 예전부터 이 이름으로 가져다 쓰는 화면이 여럿이라 그대로 다시 내보낸다
+export { ADMIN_TOKEN_KEY };
 
 export function useStats() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -99,13 +102,8 @@ export function useStats() {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem(ADMIN_TOKEN_KEY) || '';
-      const res = await fetch('/api/stats', {
-        headers: token ? { 'x-admin-token': token } : undefined,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || '집계를 불러오지 못했습니다.');
-      setStats(data);
+      // 마스터키와 로그인 세션 중 가진 쪽을 함께 보낸다. 판단은 서버가 한다.
+      setStats(await adminFetch('/api/stats'));
     } catch (err: any) {
       setError(err.message);
     } finally {

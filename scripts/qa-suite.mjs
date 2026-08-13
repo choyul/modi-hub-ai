@@ -691,6 +691,138 @@ let stats = null;
     body: JSON.stringify({ id: 'GL6', patch: { features: '프로젝터·마이크, 가변형 가구(접이식 원탁)' } }) });
 }
 
+// ── 대관 신청 관리 (AD-04) ────────────────────────────────────
+// 상태 전이 규칙이 이 기능의 전부다. 승인 자체보다 '승인할 수 없는 것을
+// 승인하지 못하는가'가 중요하다.
+console.log('\n▸ A 담당자 — 대관 신청 관리');
+
+{
+  const r = await api('/api/admin-reservations?status=승인대기', { headers: adminH });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-04', area: '대관관리',
+      title: '승인대기 신청 목록과 상태별 건수를 받는다',
+      pre: '담당자 토큰', input: 'GET ?status=승인대기',
+      expected: '200 · reservations 배열 + counts 4종' },
+    r.status === 200 && Array.isArray(r.body?.reservations) && r.body?.counts?.승인대기 !== undefined,
+    `status=${r.status} 목록=${r.body?.reservations?.length ?? '-'}건 counts=${JSON.stringify(r.body?.counts ?? {})}`);
+
+  const r2 = await api('/api/admin-reservations');
+  T({ persona: '미인증 외부인', role: 'A', feature: 'AD-04·LG-06', area: '보안',
+      title: '토큰 없이 대관 신청 목록을 볼 수 없다',
+      pre: '헤더 없음', input: 'GET /api/admin-reservations',
+      expected: '401 차단' }, r2.status === 401,
+    `status=${r2.status} ${JSON.stringify(r2.body)}`);
+
+  // 실제 신청 1건을 만들어 상태 전이를 끝까지 돌린다.
+  // 남의 데이터로 시험하지 않도록 테스트 계정 것으로 만든다.
+  let testRev = null;
+  if (token) {
+    const mk = await api('/api/reservation', {
+      method: 'POST', headers: authH,
+      body: JSON.stringify({
+        spaceId: 'GL4M', useDate: '2026-12-24', useTime: '10:00~12:00',
+        headcount: 4, purpose: 'QA 상태전이 검증',
+      }),
+    });
+    testRev = mk.body?.reservation?.id ?? null;
+  }
+
+  if (testRev) {
+    const bad = await api('/api/admin-reservations', { method: 'PATCH', headers: adminH,
+      body: JSON.stringify({ id: testRev, status: '취소' }) });
+    T({ persona: '권한 오용', role: 'A', feature: 'AD-04', area: '대관관리',
+        title: '담당자가 신청자 몫인 「취소」로 바꿀 수 없다',
+        pre: `${testRev} 승인대기`, input: 'PATCH status=취소',
+        expected: '400 · 허용 상태 안내' }, bad.status === 400,
+      `status=${bad.status} ${bad.body?.error ?? ''}`);
+
+    const noMemo = await api('/api/admin-reservations', { method: 'PATCH', headers: adminH,
+      body: JSON.stringify({ id: testRev, status: '반려' }) });
+    T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-04', area: '입력검증',
+        title: '반려에는 사유가 반드시 필요하다',
+        pre: `${testRev} 승인대기`, input: 'PATCH status=반려 (memo 없음)',
+        expected: '400 · 사유 요구' }, noMemo.status === 400,
+      `status=${noMemo.status} ${noMemo.body?.error ?? ''}`);
+
+    const ok = await api('/api/admin-reservations', { method: 'PATCH', headers: adminH,
+      body: JSON.stringify({ id: testRev, status: '예약확정' }) });
+    T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-04', area: '대관관리',
+        title: '승인대기 신청을 예약확정으로 승인한다',
+        pre: `${testRev} 승인대기`, input: 'PATCH status=예약확정',
+        expected: '200 · 상태 예약확정' },
+      ok.status === 200 && ok.body?.reservation?.status === '예약확정',
+      `status=${ok.status} 결과=${ok.body?.reservation?.status ?? ok.body?.error}`);
+
+    const back = await api('/api/admin-reservations', { method: 'PATCH', headers: adminH,
+      body: JSON.stringify({ id: testRev, status: '반려', memo: 'QA 검증 후 원복' }) });
+    T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-04', area: '대관관리',
+        title: '확정한 뒤에도 사유를 달아 반려로 되돌릴 수 있다',
+        pre: `${testRev} 예약확정`, input: 'PATCH status=반려 + memo',
+        expected: '200 · 상태 반려' },
+      back.status === 200 && back.body?.reservation?.status === '반려',
+      `status=${back.status} 결과=${back.body?.reservation?.status ?? back.body?.error}`);
+
+    await admin.from('reservations').delete().eq('id', testRev);
+  } else {
+    T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-04', area: '대관관리',
+        title: '상태 전이 검증용 신청 생성',
+        pre: '테스트 계정 세션', input: 'POST /api/reservations',
+        expected: '접수번호 발급' }, false, '신청 생성 실패 — 이후 전이 검증을 건너뜀');
+  }
+}
+
+// ── 관리자 계정 관리 (AD-15) ──────────────────────────────────
+console.log('\n▸ A 담당자 — 관리자 계정 관리');
+
+{
+  const r = await api('/api/admin-users', { headers: adminH });
+  const tableReady = r.status === 200;
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-15', area: '계정관리',
+      title: '관리자 명단과 본인 권한을 조회한다',
+      pre: 'admin_users 테이블 생성됨', input: 'GET /api/admin-users',
+      expected: '200 · admins 배열 + me.role' },
+    tableReady && Array.isArray(r.body?.admins) && Boolean(r.body?.me?.role),
+    r.status === 503
+      ? `status=503 (마이그레이션 미실행) ${r.body?.error ?? ''}`
+      : `status=${r.status} 관리자=${r.body?.admins?.length ?? '-'}명 내권한=${r.body?.me?.role ?? '-'}`);
+
+  const r2 = await api('/api/admin-users');
+  T({ persona: '미인증 외부인', role: 'A', feature: 'AD-15·LG-06', area: '보안',
+      title: '토큰 없이 관리자 명단을 볼 수 없다',
+      pre: '헤더 없음', input: 'GET /api/admin-users',
+      expected: '401 차단' }, r2.status === 401,
+    `status=${r2.status} ${JSON.stringify(r2.body)}`);
+
+  const r3 = await api('/api/admin-users', { method: 'POST', headers: adminH,
+    body: JSON.stringify({ email: '골뱅이없는주소', role: 'admin' }) });
+  T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-15', area: '입력검증',
+      title: '형식이 잘못된 이메일은 관리자로 등록되지 않는다',
+      pre: '마스터 권한', input: 'POST email=골뱅이없는주소',
+      expected: '400 · 형식 안내' }, r3.status === 400,
+    `status=${r3.status} ${r3.body?.error ?? ''}`);
+
+  if (tableReady) {
+    const r4 = await api('/api/admin-users', { method: 'POST', headers: adminH,
+      body: JSON.stringify({ email: `qa-noexist-${Date.now()}@example.com`, role: 'admin' }) });
+    T({ persona: 'P5 조율(담당자)', role: 'A', feature: 'AD-15', area: '입력검증',
+        title: '가입되지 않은 이메일은 임시 비밀번호 없이 등록되지 않는다',
+        pre: '마스터 권한', input: 'POST password 없음',
+        expected: '400 · 임시 비밀번호 요구' }, r4.status === 400,
+      `status=${r4.status} ${r4.body?.error ?? ''}`);
+
+    const me = r.body?.admins?.find((a) => a.role === 'master');
+    const masters = (r.body?.admins ?? []).filter((a) => a.role === 'master').length;
+    if (me && masters === 1) {
+      const r5 = await api('/api/admin-users', { method: 'DELETE', headers: adminH,
+        body: JSON.stringify({ userId: me.user_id }) });
+      T({ persona: '권한 오용', role: 'A', feature: 'AD-15', area: '보안',
+          title: '마지막 마스터는 해제할 수 없다 (자물쇠를 안에서 잠그지 못하게)',
+          pre: `마스터 ${masters}명`, input: `DELETE ${me.email}`,
+          expected: '400 차단' }, r5.status === 400,
+        `status=${r5.status} ${r5.body?.error ?? ''}`);
+    }
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 // S — 시스템 / 보안·데이터 무결성
 // ══════════════════════════════════════════════════════════════

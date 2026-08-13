@@ -1,10 +1,10 @@
 {
   "summary": {
     "base": "https://modi-hub-ai.vercel.app",
-    "total": 68,
-    "pass": 68,
-    "fail": 0,
-    "rate": 100,
+    "total": 77,
+    "pass": 76,
+    "fail": 1,
+    "rate": 99,
     "byRole": {
       "G": {
         "total": 15,
@@ -19,8 +19,8 @@
         "pass": 8
       },
       "A": {
-        "total": 22,
-        "pass": 22
+        "total": 31,
+        "pass": 30
       },
       "S": {
         "total": 6,
@@ -28,18 +28,18 @@
       }
     },
     "stats": {
-      "totalSearches": 220,
-      "successCount": 77,
-      "unmetCount": 143,
+      "totalSearches": 251,
+      "successCount": 87,
+      "unmetCount": 164,
       "unmetRate": 65,
-      "registeredDemands": 8,
-      "contactLeft": 8,
+      "registeredDemands": 9,
+      "contactLeft": 9,
       "reservationCount": 4,
       "pendingReservations": 1,
       "cancelledReservations": 3,
-      "feedbackCount": 9,
-      "avgLatencyMs": 719,
-      "noLlmCount": 212,
+      "feedbackCount": 10,
+      "avgLatencyMs": 747,
+      "noLlmCount": 242,
       "noLlmRate": 96,
       "notifyWaiters": 0
     }
@@ -56,7 +56,7 @@
       "pre": "로그인 없음",
       "input": "\"부녀회 8명이 김장할 만한 곳\"",
       "expected": "200 · 결과 1건 이상 · 키친 계열 포함",
-      "actual": "200 · GL3,HO2 · 462ms",
+      "actual": "200 · GL3,HO2 · 871ms",
       "result": "PASS"
     },
     {
@@ -84,7 +84,7 @@
       "pre": "서버 워밍업 후 — 콜드스타트 제외",
       "input": "동일",
       "expected": "3,000ms 미만",
-      "actual": "462ms (콜드스타트 최초 1회는 2004ms)",
+      "actual": "871ms (콜드스타트 최초 1회는 3115ms)",
       "result": "PASS"
     },
     {
@@ -264,9 +264,9 @@
       "area": "인증",
       "title": "주민이 스스로 계정을 만든다 (확인 메일 없이 바로 사용)",
       "pre": "로그인 없음",
-      "input": "qa-1786586756074@test.modi",
+      "input": "qa-1786589505598@test.modi",
       "expected": "200 · 곧바로 로그인 가능한 상태",
-      "actual": "HTTP 200 qa-1786586756074@test.modi",
+      "actual": "HTTP 200 qa-1786589505598@test.modi",
       "result": "PASS"
     },
     {
@@ -364,7 +364,7 @@
       "pre": "GL4M = self/live · 정원 6명",
       "input": "9/15 14~16시 · 5명 · 독서모임",
       "expected": "200 접수",
-      "actual": "HTTP 200 · REV-260813-1434",
+      "actual": "HTTP 200 · REV-260813-1240",
       "result": "PASS"
     },
     {
@@ -406,7 +406,7 @@
       "pre": "GL7 = self/live · 60,000원/1박",
       "input": "12/24 · 2명",
       "expected": "200 · 승인대기",
-      "actual": "HTTP 200 · REV-260813-3434",
+      "actual": "HTTP 200 · REV-260813-3000",
       "result": "PASS"
     },
     {
@@ -434,7 +434,7 @@
       "pre": "GL4 = self/live · 단체는 온라인 신청",
       "input": "12명",
       "expected": "200 · 승인대기",
-      "actual": "HTTP 200 · REV-260813-7535",
+      "actual": "HTTP 200 · REV-260813-5279",
       "result": "PASS"
     },
     {
@@ -474,7 +474,7 @@
       "area": "대관신청",
       "title": "승인 전이면 스스로 취소할 수 있다 (되돌리기)",
       "pre": "승인대기 상태",
-      "input": "DELETE REV-260813-1434",
+      "input": "DELETE REV-260813-1240",
       "expected": "200 · status=\"취소\"",
       "actual": "HTTP 200 · 취소",
       "result": "PASS"
@@ -488,7 +488,7 @@
       "area": "보안",
       "title": "남의 신청은 취소할 수 없다",
       "pre": "다른 계정으로 로그인",
-      "input": "DELETE REV-260813-1434 (타인 소유)",
+      "input": "DELETE REV-260813-1240 (타인 소유)",
       "expected": "404/403 — 성공(200)이면 중대 결함",
       "actual": "HTTP 404",
       "result": "PASS"
@@ -616,7 +616,7 @@
       "pre": "토큰 보유",
       "input": "GET /api/stats",
       "expected": "200 · 검색 누적 집계",
-      "actual": "검색 220건 · 미충족 143건",
+      "actual": "검색 251건 · 미충족 164건",
       "result": "PASS"
     },
     {
@@ -630,7 +630,7 @@
       "pre": "미충족 발생",
       "input": "unmetTypes",
       "expected": "유형 1개 이상",
-      "actual": "분류 미상(128), 영주 지역 회의·교육(7), 키친·조리(1), 부녀회 활동 공간(1), 요청 정보 불분명(1), 15명 이상 단체 조리 공간(1), 요청 유형 없음(1), 유효하지 않은 공간 검색 요청(1), 워밍업 공간(1), 수영장(1)",
+      "actual": "분류 미상(148), 영주 지역 회의·교육(8), 키친·조리(1), 부녀회 활동 공간(1), 요청 정보 불분명(1), 15명 이상 단체 조리 공간(1), 요청 유형 없음(1), 유효하지 않은 공간 검색 요청(1), 워밍업 공간(1), 수영장(1)",
       "result": "PASS"
     },
     {
@@ -644,7 +644,7 @@
       "pre": "검색 누적",
       "input": "noLlmRate",
       "expected": "숫자값 · 계층 분포 표기",
-      "actual": "무LLM 96% · ③ 임베딩:135 ① 조건필터:61 ② 퍼지:16 ④ LLM:8",
+      "actual": "무LLM 96% · ③ 임베딩:156 ① 조건필터:68 ② 퍼지:18 ④ LLM:9",
       "result": "PASS"
     },
     {
@@ -672,7 +672,7 @@
       "pre": "피드백 제출됨",
       "input": "feedbackReasons",
       "expected": "1건 이상",
-      "actual": "9건 · 시간이 안 맞아요",
+      "actual": "10건 · 시간이 안 맞아요",
       "result": "PASS"
     },
     {
@@ -916,6 +916,132 @@
     {
       "no": 63,
       "tcId": "TC-063",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-04",
+      "area": "대관관리",
+      "title": "승인대기 신청 목록과 상태별 건수를 받는다",
+      "pre": "담당자 토큰",
+      "input": "GET ?status=승인대기",
+      "expected": "200 · reservations 배열 + counts 4종",
+      "actual": "status=200 목록=1건 counts={\"승인대기\":1,\"예약확정\":0,\"반려\":0,\"취소\":3}",
+      "result": "PASS"
+    },
+    {
+      "no": 64,
+      "tcId": "TC-064",
+      "persona": "미인증 외부인",
+      "role": "A",
+      "feature": "AD-04·LG-06",
+      "area": "보안",
+      "title": "토큰 없이 대관 신청 목록을 볼 수 없다",
+      "pre": "헤더 없음",
+      "input": "GET /api/admin-reservations",
+      "expected": "401 차단",
+      "actual": "status=401 {\"error\":\"관리자 인증이 필요합니다.\"}",
+      "result": "PASS"
+    },
+    {
+      "no": 65,
+      "tcId": "TC-065",
+      "persona": "권한 오용",
+      "role": "A",
+      "feature": "AD-04",
+      "area": "대관관리",
+      "title": "담당자가 신청자 몫인 「취소」로 바꿀 수 없다",
+      "pre": "REV-260813-8725 승인대기",
+      "input": "PATCH status=취소",
+      "expected": "400 · 허용 상태 안내",
+      "actual": "status=400 「승인대기」에서 「취소」로는 바꿀 수 없습니다. 가능한 상태: 예약확정, 반려",
+      "result": "PASS"
+    },
+    {
+      "no": 66,
+      "tcId": "TC-066",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-04",
+      "area": "입력검증",
+      "title": "반려에는 사유가 반드시 필요하다",
+      "pre": "REV-260813-8725 승인대기",
+      "input": "PATCH status=반려 (memo 없음)",
+      "expected": "400 · 사유 요구",
+      "actual": "status=400 반려 사유를 적어 주세요. 신청자에게 전달됩니다.",
+      "result": "PASS"
+    },
+    {
+      "no": 67,
+      "tcId": "TC-067",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-04",
+      "area": "대관관리",
+      "title": "승인대기 신청을 예약확정으로 승인한다",
+      "pre": "REV-260813-8725 승인대기",
+      "input": "PATCH status=예약확정",
+      "expected": "200 · 상태 예약확정",
+      "actual": "status=200 결과=예약확정",
+      "result": "PASS"
+    },
+    {
+      "no": 68,
+      "tcId": "TC-068",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-04",
+      "area": "대관관리",
+      "title": "확정한 뒤에도 사유를 달아 반려로 되돌릴 수 있다",
+      "pre": "REV-260813-8725 예약확정",
+      "input": "PATCH status=반려 + memo",
+      "expected": "200 · 상태 반려",
+      "actual": "status=200 결과=반려",
+      "result": "PASS"
+    },
+    {
+      "no": 69,
+      "tcId": "TC-069",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-15",
+      "area": "계정관리",
+      "title": "관리자 명단과 본인 권한을 조회한다",
+      "pre": "admin_users 테이블 생성됨",
+      "input": "GET /api/admin-users",
+      "expected": "200 · admins 배열 + me.role",
+      "actual": "status=503 (마이그레이션 미실행) 관리자 테이블(admin_users)이 아직 만들어지지 않았습니다. supabase/migrations/0002_admin.sql 을 실행해 주세요.",
+      "result": "FAIL"
+    },
+    {
+      "no": 70,
+      "tcId": "TC-070",
+      "persona": "미인증 외부인",
+      "role": "A",
+      "feature": "AD-15·LG-06",
+      "area": "보안",
+      "title": "토큰 없이 관리자 명단을 볼 수 없다",
+      "pre": "헤더 없음",
+      "input": "GET /api/admin-users",
+      "expected": "401 차단",
+      "actual": "status=401 {\"error\":\"관리자 인증이 필요합니다.\"}",
+      "result": "PASS"
+    },
+    {
+      "no": 71,
+      "tcId": "TC-071",
+      "persona": "P5 조율(담당자)",
+      "role": "A",
+      "feature": "AD-15",
+      "area": "입력검증",
+      "title": "형식이 잘못된 이메일은 관리자로 등록되지 않는다",
+      "pre": "마스터 권한",
+      "input": "POST email=골뱅이없는주소",
+      "expected": "400 · 형식 안내",
+      "actual": "status=400 이메일 형식을 확인해 주세요.",
+      "result": "PASS"
+    },
+    {
+      "no": 72,
+      "tcId": "TC-072",
       "persona": "시스템(배치)",
       "role": "S",
       "feature": "SR-03",
@@ -928,8 +1054,8 @@
       "result": "PASS"
     },
     {
-      "no": 64,
-      "tcId": "TC-064",
+      "no": 73,
+      "tcId": "TC-073",
       "persona": "시스템(배치)",
       "role": "S",
       "feature": "LG-04",
@@ -942,8 +1068,8 @@
       "result": "PASS"
     },
     {
-      "no": 65,
-      "tcId": "TC-065",
+      "no": 74,
+      "tcId": "TC-074",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "RLS",
@@ -956,8 +1082,8 @@
       "result": "PASS"
     },
     {
-      "no": 66,
-      "tcId": "TC-066",
+      "no": 75,
+      "tcId": "TC-075",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "RLS",
@@ -970,22 +1096,22 @@
       "result": "PASS"
     },
     {
-      "no": 67,
-      "tcId": "TC-067",
+      "no": 76,
+      "tcId": "TC-076",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "NF-03",
       "area": "보안",
       "title": "브라우저 번들에 Gemini 키·service_role 키가 없다",
       "pre": "npm run build 산출물",
-      "input": "dist/assets/*.js (556KB)",
+      "input": "dist/assets/*.js (567KB)",
       "expected": "API 키 문자열 0건",
       "actual": "Gemini키=없음 · secret키=없음 (실제 키 값 대조)",
       "result": "PASS"
     },
     {
-      "no": 68,
-      "tcId": "TC-068",
+      "no": 77,
+      "tcId": "TC-077",
       "persona": "외부 공격자",
       "role": "S",
       "feature": "NF-05",
@@ -994,7 +1120,7 @@
       "pre": "분당 20회 제한 · 순차 호출",
       "input": "25회 연속 호출",
       "expected": "20회 통과 후 429 반환",
-      "actual": "25회 중 통과=17 차단=8 (17524ms)",
+      "actual": "25회 중 통과=19 차단=6 (17906ms)",
       "result": "PASS"
     }
   ]

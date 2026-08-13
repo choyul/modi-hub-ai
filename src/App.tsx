@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route , Navigate } from 'react-router';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminSpace from './pages/admin/AdminSpace';
+import AdminReservations from './pages/admin/AdminReservations';
 import AdminLog from './pages/admin/AdminLog';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminAccount from './pages/admin/AdminAccount';
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="space" element={<AdminSpace />} />
+            <Route path="reservations" element={<AdminReservations />} />
             <Route path="log" element={<AdminLog />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="account" element={<AdminAccount />} />

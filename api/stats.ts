@@ -1,10 +1,12 @@
 /**
  * GET /api/stats — 담당자 화면 단일 데이터원. Supabase 에서 그 자리에서 집계한다.
- * 원문 질의·연락처는 x-admin-token 이 맞을 때만 내려간다 (LG-06).
+ * 원문 질의·연락처는 관리자로 확인된 요청에만 내려간다 (LG-06).
+ * 확인 경로는 두 가지 — 로그인 계정(admin_users)과 마스터키(ADMIN_TOKEN).
  */
 import { applyCors } from '../server/cors.js';
 import { supabaseAdmin } from '../server/supabase.js';
 import { getSpaces, isPersistent } from '../server/db.js';
+import { requireAdmin } from '../server/adminAuth.js';
 
 const REASON_LABEL: Record<string, string> = {
   far: '너무 멀어요', time: '시간이 안 맞아요', cost: '비용이 부담돼요',
@@ -56,9 +58,12 @@ export default async function handler(req: any, res: any) {
     const unmetLogs = logs.filter((l) => l.outcome === 'unmet');
     const noLlm = logs.filter((l) => !l.llm_called);
     const adminToken = process.env.ADMIN_TOKEN;
-    const authorized = Boolean(adminToken) && req.headers['x-admin-token'] === adminToken;
+    const me = await requireAdmin(req, 'admin');
+    const authorized = Boolean(me);
 
-    const recent = logs.slice(0, 50).map((l) => ({
+    // 로그 화면에서 기간을 넓히고 검색·묶어보기를 하려면 표본이 있어야 한다.
+    // 이미 위에서 500건을 읽어 왔으므로 여기서 잘라 버릴 이유가 없다.
+    const recent = logs.slice(0, 300).map((l) => ({
       ts: l.ts,
       rawQuery: authorized ? l.raw_query : '[비공개]',
       parsed: { purpose: l.purpose, headcount: l.headcount, region: l.region, whenText: l.when_text },
@@ -73,7 +78,9 @@ export default async function handler(req: any, res: any) {
       persisted: isPersistent,
       detailAuthorized: authorized,
       tokenConfigured: Boolean(adminToken),
-      detailNotice: adminToken ? null : 'ADMIN_TOKEN이 설정되지 않아 원문 질의 목록은 내려보내지 않습니다.',
+      detailNotice: authorized
+        ? null
+        : '관리자로 확인되지 않아 원문 질의와 연락처는 내려보내지 않습니다.',
       summary: {
         totalSearches: logs.length,
         successCount: logs.length - unmetLogs.length,
