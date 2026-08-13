@@ -6,19 +6,19 @@
     "precision": 0.8666666666666668,
     "recall": 0.95,
     "f1": 0.9064220183486239,
-    "avgMs": 155,
+    "avgMs": 98,
     "n": 20,
     "blocked": 0
   },
   "B": {
-    "hit": 1,
+    "hit": 4,
     "hitRate": 1,
-    "precision": 0.5,
-    "recall": 1,
-    "f1": 0.6666666666666666,
-    "avgMs": 9041,
-    "n": 1,
-    "blocked": 19
+    "precision": 0.75,
+    "recall": 0.875,
+    "f1": 0.8076923076923077,
+    "avgMs": 6957,
+    "n": 4,
+    "blocked": 16
   },
   "H": {
     "n": 10,
@@ -27,7 +27,7 @@
     "precision": 0.7666666666666666,
     "recall": 0.9,
     "f1": 0.828,
-    "avgMs": 201,
+    "avgMs": 117,
     "llmCalls": 0
   },
   "llmCalls": 0,
@@ -60,7 +60,7 @@
         "hit": true,
         "precision": 0.5,
         "recall": 1,
-        "ms": 778,
+        "ms": 747,
         "layer": "filter",
         "llm": false
       },
@@ -69,7 +69,7 @@
         "hit": true,
         "precision": 0.5,
         "recall": 1,
-        "ms": 9041,
+        "ms": 4983,
         "blocked": false,
         "err": ""
       }
@@ -89,18 +89,18 @@
         "hit": true,
         "precision": 0.5,
         "recall": 0.5,
-        "ms": 1,
+        "ms": 0,
         "layer": "filter",
         "llm": false
       },
       "b": {
-        "pred": "[일일 한도 초과(429)]",
-        "hit": false,
-        "precision": 0,
-        "recall": 0,
-        "ms": 0,
-        "blocked": true,
-        "err": "일일 한도 초과(429)"
+        "pred": "GL4M,HO3",
+        "hit": true,
+        "precision": 0.5,
+        "recall": 0.5,
+        "ms": 7611,
+        "blocked": false,
+        "err": ""
       }
     },
     {
@@ -117,18 +117,18 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 0,
+        "ms": 1,
         "layer": "filter",
         "llm": false
       },
       "b": {
-        "pred": "[일일 한도 초과(429)]",
-        "hit": false,
-        "precision": 0,
-        "recall": 0,
-        "ms": 0,
-        "blocked": true,
-        "err": "일일 한도 초과(429)"
+        "pred": "GL4",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 11330,
+        "blocked": false,
+        "err": ""
       }
     },
     {
@@ -145,7 +145,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 0,
+        "ms": 124,
         "layer": "filter",
         "llm": false
       },
@@ -201,7 +201,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 0,
+        "ms": 1,
         "layer": "filter",
         "llm": false
       },
@@ -257,7 +257,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 907,
+        "ms": 437,
         "layer": "embedding",
         "llm": false
       },
@@ -374,13 +374,13 @@
         "llm": false
       },
       "b": {
-        "pred": "[일일 한도 초과(429)]",
-        "hit": false,
-        "precision": 0,
-        "recall": 0,
-        "ms": 0,
-        "blocked": true,
-        "err": "일일 한도 초과(429)"
+        "pred": "GL7",
+        "hit": true,
+        "precision": 1,
+        "recall": 1,
+        "ms": 3904,
+        "blocked": false,
+        "err": ""
       }
     },
     {
@@ -536,7 +536,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 507,
+        "ms": 332,
         "layer": "embedding",
         "llm": false
       },
@@ -588,7 +588,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 913,
+        "ms": 318,
         "layer": "embedding",
         "llm": false
       },
@@ -657,7 +657,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 803,
+        "ms": 355,
         "layer": "embedding",
         "llm": false
       }
@@ -714,7 +714,7 @@
         "hit": true,
         "precision": 0.5,
         "recall": 1,
-        "ms": 345,
+        "ms": 375,
         "layer": "embedding",
         "llm": false
       }
@@ -733,7 +733,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 408,
+        "ms": 0,
         "layer": "filter",
         "llm": false
       }
@@ -770,7 +770,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 457,
+        "ms": 443,
         "layer": "embedding",
         "llm": false
       }
