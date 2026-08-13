@@ -908,6 +908,28 @@ console.log('\n▸ S 시스템 — 데이터·보안');
   console.log(`\n(테스트 계정 ${email} 삭제)`);
 }
 
+// 테스트가 만든 검색 로그를 지운다.
+//
+// 한 번 돌 때마다 「레이트리밋 검증」 128건이 쌓였다. 담당자 화면 묶어보기
+// 1위가 테스트 문자열이 되어 실제 주민 질의를 덮었다. 운영 데이터를 더럽히는
+// 테스트는 결함이지 부작용이 아니다 — 자기가 만든 것은 자기가 치운다.
+//
+// 정확히 일치하는 문자열만 지운다. 부분 일치로 지우면 실주민 질의를 삼킨다.
+const TEST_QUERIES = ['레이트리밋 검증', '워밍업', '워밍업2', 'QA검색어확인'];
+{
+  const { error, count } = await admin
+    .from('search_logs').delete({ count: 'exact' }).in('raw_query', TEST_QUERIES);
+  if (error) console.warn('(테스트 로그 정리 실패:', error.message, ')');
+  else console.log(`(테스트 검색 로그 ${count ?? 0}건 삭제)`);
+}
+
+// 집계는 정리가 끝난 뒤 다시 읽는다. 테스트가 부풀린 숫자를 보고서에
+// 그대로 실으면 그 보고서는 서비스가 아니라 테스트를 설명하게 된다.
+{
+  const { body } = await api('/api/stats', { headers: adminH });
+  if (body?.summary) stats = body;
+}
+
 const pass = cases.filter((c) => c.result === 'PASS').length;
 const fail = cases.length - pass;
 const summary = {

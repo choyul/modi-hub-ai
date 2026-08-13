@@ -28,19 +28,19 @@
       }
     },
     "stats": {
-      "totalSearches": 251,
-      "successCount": 87,
-      "unmetCount": 164,
-      "unmetRate": 65,
-      "registeredDemands": 9,
-      "contactLeft": 9,
-      "reservationCount": 4,
-      "pendingReservations": 1,
-      "cancelledReservations": 3,
-      "feedbackCount": 10,
-      "avgLatencyMs": 747,
-      "noLlmCount": 242,
-      "noLlmRate": 96,
+      "totalSearches": 142,
+      "successCount": 90,
+      "unmetCount": 52,
+      "unmetRate": 37,
+      "registeredDemands": 10,
+      "contactLeft": 10,
+      "reservationCount": 2,
+      "pendingReservations": 2,
+      "cancelledReservations": 0,
+      "feedbackCount": 11,
+      "avgLatencyMs": 618,
+      "noLlmCount": 138,
+      "noLlmRate": 97,
       "notifyWaiters": 0
     }
   },
@@ -56,7 +56,7 @@
       "pre": "로그인 없음",
       "input": "\"부녀회 8명이 김장할 만한 곳\"",
       "expected": "200 · 결과 1건 이상 · 키친 계열 포함",
-      "actual": "200 · GL3,HO2 · 871ms",
+      "actual": "200 · GL3,HO2 · 531ms",
       "result": "PASS"
     },
     {
@@ -84,7 +84,7 @@
       "pre": "서버 워밍업 후 — 콜드스타트 제외",
       "input": "동일",
       "expected": "3,000ms 미만",
-      "actual": "871ms (콜드스타트 최초 1회는 3115ms)",
+      "actual": "531ms (콜드스타트 최초 1회는 2320ms)",
       "result": "PASS"
     },
     {
@@ -154,7 +154,7 @@
       "pre": "봉화 거점시설에 수영장 없음",
       "input": "\"수영장 빌릴 수 있나요\"",
       "expected": "결과 0건 · 미충족으로 기록",
-      "actual": "결과=0건 · 유형=\"분류 미상\"",
+      "actual": "결과=0건 · 유형=\"미보유 시설 · 수영장\"",
       "result": "PASS"
     },
     {
@@ -264,9 +264,9 @@
       "area": "인증",
       "title": "주민이 스스로 계정을 만든다 (확인 메일 없이 바로 사용)",
       "pre": "로그인 없음",
-      "input": "qa-1786589505598@test.modi",
+      "input": "qa-1786592236522@test.modi",
       "expected": "200 · 곧바로 로그인 가능한 상태",
-      "actual": "HTTP 200 qa-1786589505598@test.modi",
+      "actual": "HTTP 200 qa-1786592236522@test.modi",
       "result": "PASS"
     },
     {
@@ -364,7 +364,7 @@
       "pre": "GL4M = self/live · 정원 6명",
       "input": "9/15 14~16시 · 5명 · 독서모임",
       "expected": "200 접수",
-      "actual": "HTTP 200 · REV-260813-1240",
+      "actual": "HTTP 200 · REV-260813-1609",
       "result": "PASS"
     },
     {
@@ -406,7 +406,7 @@
       "pre": "GL7 = self/live · 60,000원/1박",
       "input": "12/24 · 2명",
       "expected": "200 · 승인대기",
-      "actual": "HTTP 200 · REV-260813-3000",
+      "actual": "HTTP 200 · REV-260813-3229",
       "result": "PASS"
     },
     {
@@ -434,7 +434,7 @@
       "pre": "GL4 = self/live · 단체는 온라인 신청",
       "input": "12명",
       "expected": "200 · 승인대기",
-      "actual": "HTTP 200 · REV-260813-5279",
+      "actual": "HTTP 200 · REV-260813-6726",
       "result": "PASS"
     },
     {
@@ -474,7 +474,7 @@
       "area": "대관신청",
       "title": "승인 전이면 스스로 취소할 수 있다 (되돌리기)",
       "pre": "승인대기 상태",
-      "input": "DELETE REV-260813-1240",
+      "input": "DELETE REV-260813-1609",
       "expected": "200 · status=\"취소\"",
       "actual": "HTTP 200 · 취소",
       "result": "PASS"
@@ -488,7 +488,7 @@
       "area": "보안",
       "title": "남의 신청은 취소할 수 없다",
       "pre": "다른 계정으로 로그인",
-      "input": "DELETE REV-260813-1240 (타인 소유)",
+      "input": "DELETE REV-260813-1609 (타인 소유)",
       "expected": "404/403 — 성공(200)이면 중대 결함",
       "actual": "HTTP 404",
       "result": "PASS"
@@ -616,7 +616,7 @@
       "pre": "토큰 보유",
       "input": "GET /api/stats",
       "expected": "200 · 검색 누적 집계",
-      "actual": "검색 251건 · 미충족 164건",
+      "actual": "검색 144건 · 미충족 54건",
       "result": "PASS"
     },
     {
@@ -630,7 +630,7 @@
       "pre": "미충족 발생",
       "input": "unmetTypes",
       "expected": "유형 1개 이상",
-      "actual": "분류 미상(148), 영주 지역 회의·교육(8), 키친·조리(1), 부녀회 활동 공간(1), 요청 정보 불분명(1), 15명 이상 단체 조리 공간(1), 요청 유형 없음(1), 유효하지 않은 공간 검색 요청(1), 워밍업 공간(1), 수영장(1)",
+      "actual": "미보유 시설 · 수영장(20), 분류 미상(16), 영주 지역 회의·교육(10), 미보유 시설 · 체육시설(3), 키친·조리(2), 부녀회 활동 공간(1), 요청 정보 불분명(1), 15명 이상 단체 조리 공간(1)",
       "result": "PASS"
     },
     {
@@ -644,7 +644,7 @@
       "pre": "검색 누적",
       "input": "noLlmRate",
       "expected": "숫자값 · 계층 분포 표기",
-      "actual": "무LLM 96% · ③ 임베딩:156 ① 조건필터:68 ② 퍼지:18 ④ LLM:9",
+      "actual": "무LLM 97% · ① 조건필터:81 ③ 임베딩:39 ② 퍼지:20 ④ LLM:4",
       "result": "PASS"
     },
     {
@@ -672,7 +672,7 @@
       "pre": "피드백 제출됨",
       "input": "feedbackReasons",
       "expected": "1건 이상",
-      "actual": "10건 · 시간이 안 맞아요",
+      "actual": "11건 · 시간이 안 맞아요",
       "result": "PASS"
     },
     {
@@ -700,7 +700,7 @@
       "pre": "신청→취소 1건",
       "input": "reservations",
       "expected": "1건 이상 집계",
-      "actual": "총 4건 · 대기 1 · 취소 3",
+      "actual": "총 5건 · 대기 2 · 취소 3",
       "result": "PASS"
     },
     {
@@ -924,7 +924,7 @@
       "pre": "담당자 토큰",
       "input": "GET ?status=승인대기",
       "expected": "200 · reservations 배열 + counts 4종",
-      "actual": "status=200 목록=1건 counts={\"승인대기\":1,\"예약확정\":0,\"반려\":0,\"취소\":3}",
+      "actual": "status=200 목록=2건 counts={\"승인대기\":2,\"예약확정\":0,\"반려\":0,\"취소\":3}",
       "result": "PASS"
     },
     {
@@ -949,7 +949,7 @@
       "feature": "AD-04",
       "area": "대관관리",
       "title": "담당자가 신청자 몫인 「취소」로 바꿀 수 없다",
-      "pre": "REV-260813-8725 승인대기",
+      "pre": "REV-260813-7695 승인대기",
       "input": "PATCH status=취소",
       "expected": "400 · 허용 상태 안내",
       "actual": "status=400 「승인대기」에서 「취소」로는 바꿀 수 없습니다. 가능한 상태: 예약확정, 반려",
@@ -963,7 +963,7 @@
       "feature": "AD-04",
       "area": "입력검증",
       "title": "반려에는 사유가 반드시 필요하다",
-      "pre": "REV-260813-8725 승인대기",
+      "pre": "REV-260813-7695 승인대기",
       "input": "PATCH status=반려 (memo 없음)",
       "expected": "400 · 사유 요구",
       "actual": "status=400 반려 사유를 적어 주세요. 신청자에게 전달됩니다.",
@@ -977,7 +977,7 @@
       "feature": "AD-04",
       "area": "대관관리",
       "title": "승인대기 신청을 예약확정으로 승인한다",
-      "pre": "REV-260813-8725 승인대기",
+      "pre": "REV-260813-7695 승인대기",
       "input": "PATCH status=예약확정",
       "expected": "200 · 상태 예약확정",
       "actual": "status=200 결과=예약확정",
@@ -991,7 +991,7 @@
       "feature": "AD-04",
       "area": "대관관리",
       "title": "확정한 뒤에도 사유를 달아 반려로 되돌릴 수 있다",
-      "pre": "REV-260813-8725 예약확정",
+      "pre": "REV-260813-7695 예약확정",
       "input": "PATCH status=반려 + memo",
       "expected": "200 · 상태 반려",
       "actual": "status=200 결과=반려",
@@ -1104,7 +1104,7 @@
       "area": "보안",
       "title": "브라우저 번들에 Gemini 키·service_role 키가 없다",
       "pre": "npm run build 산출물",
-      "input": "dist/assets/*.js (567KB)",
+      "input": "dist/assets/*.js (568KB)",
       "expected": "API 키 문자열 0건",
       "actual": "Gemini키=없음 · secret키=없음 (실제 키 값 대조)",
       "result": "PASS"
@@ -1120,7 +1120,7 @@
       "pre": "분당 20회 제한 · 순차 호출",
       "input": "25회 연속 호출",
       "expected": "20회 통과 후 429 반환",
-      "actual": "25회 중 통과=19 차단=6 (17906ms)",
+      "actual": "25회 중 통과=19 차단=6 (16831ms)",
       "result": "PASS"
     }
   ]

@@ -7,3 +7,4 @@ coverage/
 .env*
 !.env.example
 .vercel
+search_logs_backup_*.csv
