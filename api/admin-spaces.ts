@@ -14,6 +14,7 @@
  *   2) 검색에 쓰이는 글자가 바뀌면 색인도 그 자리에서 다시 만든다. 수정과 색인이
  *      따로 놀면 담당자가 고친 내용이 검색에 안 잡히는 상태가 생긴다.
  */
+import { applyCors } from '../server/cors.js';
 import { supabaseAdmin } from '../server/supabase.js';
 import { invalidateSpacesCache } from '../server/db.js';
 
@@ -108,6 +109,7 @@ async function embed(text: string): Promise<number[] | null> {
 }
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   const token = process.env.ADMIN_TOKEN;
   if (!token || req.headers['x-admin-token'] !== token) {
     return res.status(401).json({ error: '담당자 인증이 필요합니다.' });

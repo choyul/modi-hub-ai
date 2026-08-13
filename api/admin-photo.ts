@@ -11,6 +11,7 @@
  * 업로드는 서버(service_role)만 할 수 있다. 버킷은 공개 읽기이지만 쓰기 권한이
  * 브라우저에 없으므로, 토큰 없는 사람이 사진을 바꿔치기할 수 없다.
  */
+import { applyCors } from '../server/cors.js';
 import { supabaseAdmin } from '../server/supabase.js';
 
 const BUCKET = 'space-photos';
@@ -22,6 +23,7 @@ const ALLOWED: Record<string, string> = {
 };
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   const token = process.env.ADMIN_TOKEN;
   if (!token || req.headers['x-admin-token'] !== token) {
     return res.status(401).json({ error: '담당자 인증이 필요합니다.' });

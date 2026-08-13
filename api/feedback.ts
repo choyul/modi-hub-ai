@@ -1,11 +1,13 @@
 /**
  * POST /api/feedback — 이탈 사유(UD-05) + 정보 오류 신고(PL-14, reason='report')
  */
+import { applyCors } from '../server/cors.js';
 import { appendFeedback, isPersistent } from '../server/db.js';
 
 const REASONS = ['far', 'time', 'cost', 'type', 'other', 'report'];
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'POST만 허용됩니다.' });

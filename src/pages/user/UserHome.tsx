@@ -39,7 +39,7 @@ export default function UserHome() {
       {/* 물어보기 */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto w-full px-6 py-12 md:py-16">
-          <p className="text-xs font-bold text-indigo-500 uppercase mb-2">봉화군 공간 찾기</p>
+          <p className="text-xs font-bold text-indigo-500 uppercase mb-2">내 주변 공간 찾기</p>
           <h1 className="text-2xl md:text-3xl font-bold mb-2 text-slate-900 tracking-tight">
             어떤 활동을 계획하고 계신가요?
           </h1>

@@ -2,6 +2,7 @@
  * GET /api/stats — 담당자 화면 단일 데이터원. Supabase 에서 그 자리에서 집계한다.
  * 원문 질의·연락처는 x-admin-token 이 맞을 때만 내려간다 (LG-06).
  */
+import { applyCors } from '../server/cors.js';
 import { supabaseAdmin } from '../server/supabase.js';
 import { getSpaces, isPersistent } from '../server/db.js';
 
@@ -25,6 +26,7 @@ function countBy<T>(items: T[], key: (t: T) => string | null) {
 }
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'GET만 허용됩니다.' });

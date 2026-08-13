@@ -5,6 +5,7 @@
  * NF-05: 인스턴스 메모리에서 IP당 분당 호출을 제한한다.
  *        IP는 카운트에만 쓰고 저장하지 않는다 (LG-03 유지).
  */
+import { applyCors } from '../server/cors.js';
 import { searchSpaces } from '../server/engine.js';
 import { appendSearchLog, isPersistent } from '../server/db.js';
 
@@ -22,6 +23,7 @@ function rateLimited(ip: string): boolean {
 }
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'POST만 허용됩니다.' });

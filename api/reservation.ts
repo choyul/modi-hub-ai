@@ -10,6 +10,7 @@
  * 신청이 쌓이던 오작동의 수리.
  * 자동 확정 경로는 없다(BK-07) — 상태는 '승인대기'로만 생성된다.
  */
+import { applyCors } from '../server/cors.js';
 import {
   getSpaces, insertReservation, listReservations, cancelReservation,
   userFromToken, isPersistent,
@@ -21,6 +22,7 @@ function reservationId(now: Date) {
 }
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   const user = await userFromToken(req.headers['authorization']);
   if (!user) {
     return res.status(401).json({ error: '로그인이 필요합니다.' });

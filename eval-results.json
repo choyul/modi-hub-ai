@@ -3,31 +3,31 @@
   "A": {
     "hit": 20,
     "hitRate": 1,
-    "precision": 0.975,
-    "recall": 1,
-    "f1": 0.9873417721518987,
-    "avgMs": 110,
+    "precision": 0.8666666666666668,
+    "recall": 0.95,
+    "f1": 0.9064220183486239,
+    "avgMs": 155,
     "n": 20,
     "blocked": 0
   },
   "B": {
-    "hit": 0,
-    "hitRate": 0,
-    "precision": 0,
-    "recall": 0,
-    "f1": 0,
-    "avgMs": 0,
-    "n": 0,
-    "blocked": 20
+    "hit": 1,
+    "hitRate": 1,
+    "precision": 0.5,
+    "recall": 1,
+    "f1": 0.6666666666666666,
+    "avgMs": 9041,
+    "n": 1,
+    "blocked": 19
   },
   "H": {
     "n": 10,
     "hit": 10,
     "hitRate": 1,
-    "precision": 0.95,
-    "recall": 1,
-    "f1": 0.9743589743589743,
-    "avgMs": 131,
+    "precision": 0.7666666666666666,
+    "recall": 0.9,
+    "f1": 0.828,
+    "avgMs": 201,
     "llmCalls": 0
   },
   "llmCalls": 0,
@@ -56,22 +56,22 @@
       "basis": "3F 센트럴 키친 = 식품 제조가공 거점 (계획서 Ⅲ-3F)",
       "truthStr": "GL3",
       "a": {
-        "pred": "GL3",
+        "pred": "GL3,HO2",
         "hit": true,
-        "precision": 1,
+        "precision": 0.5,
         "recall": 1,
-        "ms": 830,
+        "ms": 778,
         "layer": "filter",
         "llm": false
       },
       "b": {
-        "pred": "[일일 한도 초과(429)]",
-        "hit": false,
-        "precision": 0,
-        "recall": 0,
-        "ms": 0,
-        "blocked": true,
-        "err": "일일 한도 초과(429)"
+        "pred": "GL3,HO2",
+        "hit": true,
+        "precision": 0.5,
+        "recall": 1,
+        "ms": 9041,
+        "blocked": false,
+        "err": ""
       }
     },
     {
@@ -85,10 +85,10 @@
       "basis": "4F 모임방 6석 / 6F 주민라운지 다목적 대관",
       "truthStr": "GL4M,GL6",
       "a": {
-        "pred": "GL4M,GL6",
+        "pred": "GL4M,HO3",
         "hit": true,
-        "precision": 1,
-        "recall": 1,
+        "precision": 0.5,
+        "recall": 0.5,
         "ms": 1,
         "layer": "filter",
         "llm": false
@@ -145,7 +145,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 1,
+        "ms": 0,
         "layer": "filter",
         "llm": false
       },
@@ -257,7 +257,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 390,
+        "ms": 907,
         "layer": "embedding",
         "llm": false
       },
@@ -281,7 +281,7 @@
       "basis": "4F 모임방 = 대화 가능한 유일 구역, 2~6명",
       "truthStr": "GL4M",
       "a": {
-        "pred": "GL4M,GL6",
+        "pred": "GL4M,HO3",
         "hit": true,
         "precision": 0.5,
         "recall": 1,
@@ -309,9 +309,9 @@
       "basis": "3F CK = 밀키트 제조·위탁판매",
       "truthStr": "GL3",
       "a": {
-        "pred": "GL3",
+        "pred": "GL3,HO2",
         "hit": true,
-        "precision": 1,
+        "precision": 0.5,
         "recall": 1,
         "ms": 0,
         "layer": "filter",
@@ -341,7 +341,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 2,
+        "ms": 1,
         "layer": "fuzzy",
         "llm": false
       },
@@ -369,7 +369,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 2,
+        "ms": 1,
         "layer": "fuzzy",
         "llm": false
       },
@@ -397,7 +397,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 0,
+        "ms": 1,
         "layer": "filter",
         "llm": false
       },
@@ -450,10 +450,10 @@
       "basis": "6F 세미나↔연회 전환 / 4F 모임방 소회의",
       "truthStr": "GL6,GL4M",
       "a": {
-        "pred": "GL4M,GL6",
+        "pred": "GL4M,HO3,HO1",
         "hit": true,
-        "precision": 1,
-        "recall": 1,
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
         "ms": 0,
         "layer": "filter",
         "llm": false
@@ -536,7 +536,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 489,
+        "ms": 507,
         "layer": "embedding",
         "llm": false
       },
@@ -588,7 +588,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 493,
+        "ms": 913,
         "layer": "embedding",
         "llm": false
       },
@@ -614,9 +614,9 @@
       "basis": "3F 센트럴 키친",
       "truthStr": "GL3",
       "a": {
-        "pred": "GL3",
+        "pred": "GL3,HO2",
         "hit": true,
-        "precision": 1,
+        "precision": 0.5,
         "recall": 1,
         "ms": 0,
         "layer": "filter",
@@ -634,10 +634,10 @@
       "basis": "4F 모임방 / 6F 라운지",
       "truthStr": "GL4M,GL6",
       "a": {
-        "pred": "GL4M,GL6",
+        "pred": "GL4M,HO3,HO1",
         "hit": true,
-        "precision": 1,
-        "recall": 1,
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
         "ms": 0,
         "layer": "filter",
         "llm": false
@@ -657,7 +657,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 391,
+        "ms": 803,
         "layer": "embedding",
         "llm": false
       }
@@ -714,7 +714,7 @@
         "hit": true,
         "precision": 0.5,
         "recall": 1,
-        "ms": 380,
+        "ms": 345,
         "layer": "embedding",
         "llm": false
       }
@@ -733,7 +733,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 0,
+        "ms": 408,
         "layer": "filter",
         "llm": false
       }
@@ -749,11 +749,11 @@
       "basis": "6F 동호회 대관 명시",
       "truthStr": "GL6,GL4M",
       "a": {
-        "pred": "GL4M,GL6",
+        "pred": "GL4M,HO3,HO1",
         "hit": true,
-        "precision": 1,
-        "recall": 1,
-        "ms": 1,
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "ms": 0,
         "layer": "filter",
         "llm": false
       }
@@ -770,7 +770,7 @@
         "hit": true,
         "precision": 1,
         "recall": 1,
-        "ms": 541,
+        "ms": 457,
         "layer": "embedding",
         "llm": false
       }

@@ -4,9 +4,11 @@
  * pending 상태 공간에만 열린다. 아직 존재하지 않는 공급에 대한 대기 수요를
  * 연락처와 함께 적재하고, 담당자가 개관 시점(pending→live)에 발송한다 (AD-14).
  */
+import { applyCors } from '../server/cors.js';
 import { appendNotify, getSpaces, isPersistent } from '../server/db.js';
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'POST만 허용됩니다.' });

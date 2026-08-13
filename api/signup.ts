@@ -16,6 +16,7 @@
  *     · IP 기준 가입 횟수 제한 (계정 대량 생성 방지)
  *     · 이메일 형식·비밀번호 길이 검증
  */
+import { applyCors } from '../server/cors.js';
 import { supabaseAdmin } from '../server/supabase.js';
 
 const WINDOW_MS = 60 * 60 * 1000;   // 1시간
@@ -39,6 +40,7 @@ function countSignup(ip: string) {
 }
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'POST만 허용됩니다.' });

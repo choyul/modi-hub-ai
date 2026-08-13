@@ -55,7 +55,7 @@ export default function UserLayout() {
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">M</div>
             <div>
               <h1 className="text-lg font-bold leading-none text-slate-800">MODI Hub</h1>
-              <p className="text-xs text-slate-500 uppercase tracking-widest mt-0.5">봉화군 공간찾기</p>
+              <p className="text-xs text-slate-500 uppercase tracking-widest mt-0.5">내 주변 공간 찾기</p>
             </div>
           </Link>
 

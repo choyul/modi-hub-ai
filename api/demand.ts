@@ -2,9 +2,11 @@
  * POST /api/demand — 동의 기반 수요 등록 (UD-02·03)
  * 사용자가 "봉화군에 전달할까요?"에 직접 동의했을 때만 호출된다.
  */
+import { applyCors } from '../server/cors.js';
 import { appendDemand, isPersistent } from '../server/db.js';
 
 export default async function handler(req: any, res: any) {
+  if (applyCors(req, res)) return;
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'POST만 허용됩니다.' });
